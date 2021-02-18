@@ -1,4 +1,4 @@
-package primitive;
+package guo;
 
 import gzf.gui.Vec_Guo;
 
