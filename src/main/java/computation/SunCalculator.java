@@ -1,10 +1,10 @@
 package computation;
 
 /**
- * calculate motion of the Sun
+ * sun calculator for any location, date or time
  *
  * @author WU
- * @ref https://www.pveducation.org/pvcdrom/properties-of-sunlight/elevation-angle
+ * @ref https://www.pveducation.org/pvcdrom/properties-of-sunlight/solar-time
  * @create 2021-02-18 8:58
  */
 
