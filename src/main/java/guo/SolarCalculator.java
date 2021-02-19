@@ -56,13 +56,13 @@ public class SolarCalculator {
 	}
 
 	/**
-	 * check if the input longitude is valid.
+	 * check if the input latitude is valid.
 	 * 
 	 * @param l
 	 */
-	public static void checkLongitude(double l) {
+	public static void checkLatitude(double l) {
 		if (l <= -90 || l >= 90)
-			throw new IllegalArgumentException("Longitude must between -90(south) and 90(north): " + l);
+			throw new IllegalArgumentException("Latitude must between -90(south) and 90(north): " + l);
 	}
 
 	/**
@@ -135,13 +135,13 @@ public class SolarCalculator {
 	}
 
 	/**
-	 * longitude(deg)
+	 * latitude(deg)
 	 */
-	private double longitude = 0;
+	private double latitude = 0;
 	/**
 	 * solar direct shoot position
 	 */
-	private double solarLongitude = 0;
+	private double solarLatitude = 0;
 	/**
 	 * solar elevation angle in mid day
 	 */
@@ -159,7 +159,7 @@ public class SolarCalculator {
 	 * initiate a calculator
 	 * 
 	 * @param l
-	 *            longitude of the place to be calculated, positive for northern
+	 *            latitude of the place to be calculated, positive for northern
 	 *            hemisphere and negative for southern hemisphere
 	 */
 	public SolarCalculator(double l) {
@@ -167,17 +167,17 @@ public class SolarCalculator {
 	}
 
 	/**
-	 * set longitude of the place to be calculated.
+	 * set latitude of the place to be calculated.
 	 * 
 	 * @param l
-	 *            longitude, positive for northern hemisphere and negative for
+	 *            latitude, positive for northern hemisphere and negative for
 	 *            southern hemisphere
 	 */
 	public void setPosition(double l) {
-		checkLongitude(l);
-		longitude = l;
+		checkLatitude(l);
+		latitude = l;
 
-		double rotAng = longitude * TO_RAD;
+		double rotAng = latitude * TO_RAD;
 		solarCircleBottom = Vec_Guo.zaxis.dup().rot(Vec_Guo.xaxis, rotAng).rev();
 		solarCircleNormal = DIRECTION_NORTH.dup().rot(Vec_Guo.xaxis, rotAng).rev();
 	}
@@ -191,13 +191,13 @@ public class SolarCalculator {
 	public void setDate(int month, int day) {
 		setDate(getDayRatio(month, day));
 		// dayRatio = getDayRatio(month, day);
-		// solarLongitude = Math.cos(dayRatio * Math.PI * 2) * ANG_OBLIQUITY;
+		// solarLatitude = Math.cos(dayRatio * Math.PI * 2) * ANG_OBLIQUITY;
 		//
 		// // does not take part into the calculation process
-		// solarElevAngMid = TO_RAD * (90 - Math.abs(longitude) +
-		// solarLongitude);
+		// solarElevAngMid = TO_RAD * (90 - Math.abs(latitude) +
+		// solarLatitude);
 		//
-		// double angToNormal = TO_RAD * (90 + solarLongitude);
+		// double angToNormal = TO_RAD * (90 + solarLatitude);
 		// double dist = 1 / Math.tan(angToNormal);
 		//
 		// d = solarCircleNormal.dup().mul(dist);
@@ -211,12 +211,12 @@ public class SolarCalculator {
 	 */
 	public void setDate(double ratio) {
 		dayRatio = ratio;
-		solarLongitude = Math.cos(dayRatio * Math.PI * 2) * ANG_OBLIQUITY;
+		solarLatitude = Math.cos(dayRatio * Math.PI * 2) * ANG_OBLIQUITY;
 
 		// does not take part into the calculation process
-		solarElevAngMid = TO_RAD * (90 - Math.abs(longitude) + solarLongitude);
+		solarElevAngMid = TO_RAD * (90 - Math.abs(latitude) + solarLatitude);
 
-		double angToNormal = TO_RAD * (90 + solarLongitude);
+		double angToNormal = TO_RAD * (90 + solarLatitude);
 		double dist = 1 / Math.tan(angToNormal);
 
 		d = solarCircleNormal.dup().mul(dist);
