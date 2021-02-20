@@ -9,7 +9,7 @@ import processing.core.PApplet;
 public class Example extends PApplet {
 
 	public static void main(String[] args) {
-		PApplet.main("primitive.Example");
+		PApplet.main("guo.Example");
 	}
 
 	CameraController cam;

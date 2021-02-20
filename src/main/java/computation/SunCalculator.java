@@ -17,6 +17,10 @@ import java.util.List;
 
 public class SunCalculator {
     public static final int groundRadius = 1000;
+    public static final int[] Nanjing = new int[]{117, 24};
+    public static final int[] winterSolstice = new int[]{12, 22};
+    public static final int[] noon = new int[]{12, 0};
+
     private static final WB_GeometryFactory gf = new WB_GeometryFactory();
 
     /**
@@ -40,12 +44,22 @@ public class SunCalculator {
         return dayCount;
     }
 
-    private static double hhmmToHours(int hour, int minute) {
+    private static double hhmm2hours(int hour, int minute) {
         checkTime(hour, minute);
         return hour + minute / 60.;
     }
 
-    private static String[] hoursToHHMM(double hours) {
+    private static int[] hours2hhmm(double hours) {
+        if (Double.isNaN(hours))
+            return null;
+        else {
+            int hour = (int) Math.floor(hours);
+            int minute = (int) Math.round((hours - hour) * 60);
+            return new int[]{hour, minute};
+        }
+    }
+
+    private static String[] hours2hhmmStr(double hours) {
         if (Double.isNaN(hours))
             return null;
         else {
@@ -135,8 +149,9 @@ public class SunCalculator {
     /*=========================================================================================*/
 
     private double longitude, latitude, lonRad, latRad;
-    private int month = 12, day = 22;
-    private double localTime = 12;
+    private int month, day;
+    private double localTime;
+    private int[] location, date, time;
 
     private double delta, deltaRad;
     private int dayCounter;
@@ -153,13 +168,23 @@ public class SunCalculator {
 
     private WB_Vector pos;
     private WB_Circle ground;
+    private int pathDiv = 30;
     private WB_PolyLine path;
     private boolean polar;
 
+    public SunCalculator() {
+        setLocalPosition(Nanjing[0], Nanjing[1]);
+        setDate(winterSolstice[0], winterSolstice[1]);
+        setTime(noon[0], noon[1]);
+
+        ground = gf.createCircleWithRadius(WB_Vector.ZERO(), groundRadius);
+        polar = false;
+    }
+
     public SunCalculator(double lon, double lat) {
         setLocalPosition(lon, lat);
-        setDate(month, day);
-        setTime(localTime);
+        setDate(winterSolstice[0], winterSolstice[1]);
+        setTime(noon[0], noon[1]);
 
         ground = gf.createCircleWithRadius(WB_Vector.ZERO(), groundRadius);
         polar = false;
@@ -171,11 +196,16 @@ public class SunCalculator {
         lonRad = Math.toRadians(longitude);
         latitude = lat;
         latRad = Math.toRadians(latitude);
+
+        location = new int[]{(int) longitude, (int) latitude};
     }
 
     public void setDate(int month, int day) {
         checkDate(month, day);
+        this.month = month;
+        this.day = day;
         dayCounter = countDays(month, day);
+        date=new int[]{this.month, this.day};
 
         delta = calDeclination();
         deltaRad = Math.toRadians(delta);
@@ -185,6 +215,8 @@ public class SunCalculator {
     public void setTime(double hours) {
         checkTime(hours);
         localTime = hours;
+        time = hours2hhmm(hours);
+
         alpha = calElevation();
         azimuth = calAzimuth();
         pos = new WB_Vector(
@@ -195,10 +227,29 @@ public class SunCalculator {
     }
 
     public void setTime(int hour, int minute) {
-        setTime(hhmmToHours(hour, minute));
+        setTime(hhmm2hours(hour, minute));
+    }
+
+    public void setPathDiv(int div) {
+        this.pathDiv = div;
+    }
+
+    public int[] getLocation() {
+        return location;
+    }
+
+    public int[] getDate() {
+        return date;
+    }
+
+    public int[] getTime() {
+        return time;
     }
 
     public void printInfo() {
+        String[] curTime = hours2hhmmStr(localTime);
+        System.out.printf("(%.2f, %.2f) %d-%d %s:%s\n",
+                longitude, latitude, month, day, curTime[0], curTime[1]);
         System.out.printf("Equation of Time\t%.2f minutes\n", calEoT());
         System.out.printf("Local Solar Time Meridian\t%.2f°\n", calLSTM());
         System.out.printf("Time Correction\t%.2f minutes\n", TC);
@@ -206,18 +257,18 @@ public class SunCalculator {
         System.out.printf("Hour Angle\t%.2f°\n", calHRA());
         System.out.printf("Elevation\t%.2f°\n", Math.toDegrees(alpha));
 
-        String[] LST = hoursToHHMM(calLST());
+        String[] LST = hours2hhmmStr(calLST());
         System.out.printf("Local Solar Time\t%s:%s\n", LST[0], LST[1]);
 
         System.out.printf("Azimuth\t%.2f°\n", Math.toDegrees(azimuth));
 
         double[] sunriseSunset = calSunriseSunset();
-        String[] sunrise = hoursToHHMM(sunriseSunset[0]);
+        String[] sunrise = hours2hhmmStr(sunriseSunset[0]);
         if (null != sunrise)
             System.out.printf("Sunrise\t%s:%s\n", sunrise[0], sunrise[1]);
         else
             System.out.printf("Sunrise\tNaN\n");
-        String[] sunset = hoursToHHMM(sunriseSunset[1]);
+        String[] sunset = hours2hhmmStr(sunriseSunset[1]);
         if (null != sunset)
             System.out.printf("Sunset\t%s:%s\n", sunset[0], sunset[1]);
         else
@@ -375,7 +426,7 @@ public class SunCalculator {
         if (sunrise < 0) {
             polar = true;
             sunrise = 0;
-            sunset = hhmmToHours(23, 59);
+            sunset = hhmm2hours(23, 59);
         }
 
         if (sunrise == sunset) {
@@ -387,12 +438,13 @@ public class SunCalculator {
         return new double[]{sunrise, sunset};
     }
 
-    public void calSunPath(int subdiv) {
+    public void calSunPath() {
+        double curTime = localTime;
         List<WB_Vector> pathPoints = new ArrayList<>();
         double[] sunriseSunset = calSunriseSunset();
-        double step = /*(sunriseSunset[1] - sunriseSunset[0])*/24. / (subdiv - 1);
+        double step = /*(sunriseSunset[1] - sunriseSunset[0])*/24. / (pathDiv - 1);
 
-        for (int i = 0; i < subdiv; i++) {
+        for (int i = 0; i < pathDiv; i++) {
             double tempTime = /*sunriseSunset[0] +*/ i * step;
             this.setTime(tempTime);
             pathPoints.add(pos);
@@ -401,6 +453,7 @@ public class SunCalculator {
 //        if (polar)
         pathPoints.add(pathPoints.get(0));
         path = gf.createPolyLine(pathPoints);
+        setTime(curTime);
     }
 
     public void display(WB_Render render) {

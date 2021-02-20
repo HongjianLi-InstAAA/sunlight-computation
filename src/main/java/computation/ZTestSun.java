@@ -31,9 +31,9 @@ public class ZTestSun extends PApplet {
 
         sun = new SunCalculator(-29, 56);
         sun.setDate(12, 22);
-        sun.calSunPath(30);
-
         sun.setTime(12, 20);
+        sun.calSunPath();
+
         sun.printInfo();
     }
 
