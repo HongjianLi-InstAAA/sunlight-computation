@@ -14,6 +14,24 @@ import wblut.geom.WB_Vector;
  */
 
 public class CtrlPanel extends PApplet {
+
+    private static boolean isUpdate(int[] a, int[] b) {
+        if (null != a && null != b) {
+            for (int i = 0; i < a.length; i++)
+                if (a[i] - b[i] != 0)
+                    return true;
+        }
+        return false;
+    }
+
+    private static void updateArray(int[] origin, int[] target) {
+        if (null != origin && null != target) {
+            for (int i = 0; i < origin.length; i++) {
+                origin[i] = target[i];
+            }
+        }
+    }
+
     private ControlP5 cp5;
 
     public CtrlPanel(WB_Vector loc) {
@@ -40,7 +58,7 @@ public class CtrlPanel extends PApplet {
                 .setPosition(leftMargin, topMargin)
                 .setSize(200, 120)
                 .setMinMax(-180, 90, 180, -90)
-                .setValue(SunCalculator.Nanjing[0], SunCalculator.Nanjing[1])
+                .setValue(Sun.Nanjing[0], Sun.Nanjing[1])
                 .setCaptionLabel("Longitude, Latitude")
 //                    .disableCrosshair()
                 ;
@@ -52,7 +70,7 @@ public class CtrlPanel extends PApplet {
                 .setWidth(200)
                 .setHeight(15)
                 .setRange(1, 12)
-                .setValue(SunCalculator.summerSolstice[0])
+                .setValue(Sun.summerSolstice[0])
                 .setDecimalPrecision(0)
                 .setNumberOfTickMarks(12)
                 .setSliderMode(controlP5.Slider.FLEXIBLE);
@@ -63,7 +81,7 @@ public class CtrlPanel extends PApplet {
                 .setWidth(200)
                 .setHeight(15)
                 .setRange(1, 31)
-                .setValue(SunCalculator.summerSolstice[1])
+                .setValue(Sun.summerSolstice[1])
                 .setDecimalPrecision(0)
                 .setNumberOfTickMarks(31)
                 .setSliderMode(controlP5.Slider.FLEXIBLE);
@@ -79,7 +97,7 @@ public class CtrlPanel extends PApplet {
                 .setPosition(leftMargin, topMargin + 250)
                 .setRadius(45)
                 .setRange(0, 23)
-                .setValue(SunCalculator.highNoon[0])
+                .setValue(Sun.highNoon[0])
                 .setDecimalPrecision(0)
                 .setNumberOfTickMarks(23)
                 .setTickMarkLength(4)
@@ -91,7 +109,7 @@ public class CtrlPanel extends PApplet {
                 .setPosition(leftMargin + 105, topMargin + 250)
                 .setRadius(45)
                 .setRange(0, 59)
-                .setValue(SunCalculator.highNoon[1])
+                .setValue(Sun.highNoon[1])
                 .setDecimalPrecision(0)
                 .setNumberOfTickMarks(59)
                 .setTickMarkLength(4)
@@ -132,5 +150,34 @@ public class CtrlPanel extends PApplet {
             return new int[]{hour, minute};
         } else
             return null;
+    }
+
+    public void updateInput(Sun sun, int[] location, int[] date, int[] time) {
+        boolean isUpdate = false;
+
+        int[] inputLocation = getLonLat();
+        if (null != inputLocation && isUpdate(location, inputLocation)) {
+            updateArray(location,inputLocation);
+            sun.setLocalPosition(location[0], location[1]);
+            isUpdate = true;
+        }
+        int[] inputDate = getDate();
+        if (null != inputDate && isUpdate(date, inputDate)) {
+            updateArray(date,inputDate);
+            sun.setDate(date[0], date[1]);
+            isUpdate = true;
+        }
+        int[] inputTime = getTime();
+        if (null != inputTime && isUpdate(time, inputTime)) {
+            updateArray(time,inputTime);
+            sun.setTime(time[0], time[1]);
+            isUpdate = true;
+        }
+
+        if (isUpdate) {
+            sun.calSunPath();
+            sun.printInfo();
+            System.out.println("/////////////////UPDATE//////////////");
+        }
     }
 }

@@ -12,7 +12,7 @@ import wblut.processing.WB_Render;
  * @create 2021-02-20 15:20
  */
 
-class ZTestInteractiveSun extends PApplet {
+public class ZTestInteractiveSun extends PApplet {
     public static void main(String[] args) {
         PApplet.main("computation.ZTestInteractiveSun");
     }
@@ -20,7 +20,7 @@ class ZTestInteractiveSun extends PApplet {
     CameraController cam;
     WB_Render render;
 
-    SunCalculator sun;
+    Sun sun;
     CtrlPanel panel;
     WB_Vector panelLoc = new WB_Vector(100, 100);
 
@@ -32,11 +32,11 @@ class ZTestInteractiveSun extends PApplet {
 
     public void setup() {
 //        System.out.println("outer setup-----------------------------");
-        cam = new CameraController(this, SunCalculator.groundRadius * 2);
+        cam = new CameraController(this, Sun.groundRadius * 2);
         render = new WB_Render(this);
 
         panel = new CtrlPanel(panelLoc);
-        sun = new SunCalculator();
+        sun = new Sun();
         sun.setPathDiv(50);
         sun.calSunPath();
 
@@ -48,54 +48,11 @@ class ZTestInteractiveSun extends PApplet {
     public void draw() {
 //        System.out.println("outer draw-----------------------------");
         background(255);
-        cam.drawSystem(SunCalculator.groundRadius);
+        cam.drawSystem(Sun.groundRadius);
 
         sun.displayPath(render);
         sun.display(render);
-        updateInput();
+        panel.updateInput(sun, location, date, time);
     }
-
-    public void init() {
-        sun.calSunPath();
-        sun.printInfo();
-    }
-
-    public void updateInput() {
-        boolean isUpdate = false;
-
-        int[] inputLocation = panel.getLonLat();
-        if (null != inputLocation && isUpdate(location, inputLocation)) {
-            location = inputLocation;
-            sun.setLocalPosition(location[0], location[1]);
-            isUpdate = true;
-        }
-        int[] inputDate = panel.getDate();
-        if (null != inputDate && isUpdate(date, inputDate)) {
-            date = inputDate;
-            sun.setDate(date[0], date[1]);
-            isUpdate = true;
-        }
-        int[] inputTime = panel.getTime();
-        if (null != inputTime && isUpdate(time, inputTime)) {
-            time = inputTime;
-            sun.setTime(time[0], time[1]);
-            isUpdate = true;
-        }
-
-        if (isUpdate) {
-            init();
-            System.out.println("/////////////////UPDATE//////////////");
-        }
-    }
-
-    public boolean isUpdate(int[] a, int[] b) {
-        if (null != a && null != b)
-            for (int i = 0; i < a.length; i++) {
-                if (a[i] != b[i])
-                    return true;
-            }
-        return false;
-    }
-
 
 }

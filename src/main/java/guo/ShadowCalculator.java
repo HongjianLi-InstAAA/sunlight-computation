@@ -36,13 +36,10 @@ public class ShadowCalculator {
             return null;
 
         int len = shape.length;
-
         double scale = (shapeHeight - groundHeight) / Math.abs(light.z);
 
         Vec_Guo lightGround = light.dup().z(0).mul(scale);
-
         Vec_Guo lightNormal = Vec_Guo.zaxis.cross(lightGround).unit();
-
 
         double maxP = Double.NEGATIVE_INFINITY;
         double minP = Double.POSITIVE_INFINITY;
@@ -114,7 +111,6 @@ public class ShadowCalculator {
             return null;
 
         int len = shape.length;
-
         double scale = (shapeHeight - groundHeight) / Math.abs(light.z);
 
         Vec_Guo lightGround = light.dup().z(0).mul(scale);

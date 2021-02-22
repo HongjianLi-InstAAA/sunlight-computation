@@ -11,7 +11,7 @@ import wblut.processing.WB_Render;
  * @create 2021-02-8 17:39
  */
 
-class ZTestSun extends PApplet {
+public class ZTestSun extends PApplet {
     public static void main(String[] args) {
         PApplet.main("computation.ZTestSun");
     }
@@ -19,17 +19,17 @@ class ZTestSun extends PApplet {
     CameraController cam;
     WB_Render render;
 
-    SunCalculator sun;
+    Sun sun;
 
     public void settings() {
         size(1000, 800, P3D);
     }
 
     public void setup() {
-        cam = new CameraController(this, 200);
+        cam = new CameraController(this, Sun.groundRadius * 2);
         render = new WB_Render(this);
 
-        sun = new SunCalculator(-29, 56);
+        sun = new Sun(-29, 56);
         sun.setDate(12, 22);
         sun.setTime(12, 20);
         sun.calSunPath();
@@ -39,7 +39,7 @@ class ZTestSun extends PApplet {
 
     public void draw() {
         background(255);
-        cam.drawSystem(SunCalculator.groundRadius);
+        cam.drawSystem(Sun.groundRadius);
 
         sun.displayPath(render);
         sun.display(render);
