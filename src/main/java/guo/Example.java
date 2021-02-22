@@ -5,7 +5,6 @@ import gzf.gui.Vec_Guo;
 import org.locationtech.jts.geom.Geometry;
 import processing.core.PApplet;
 
-@SuppressWarnings("serial")
 public class Example extends PApplet {
 
 	public static void main(String[] args) {
@@ -68,12 +67,12 @@ public class Example extends PApplet {
 		fill(255);
 		stroke(0);
 		strokeWeight(1);
-		drawShape();
-		
-		drawShape2();
+		drawShape(shape);
+
+		drawShape(shape2);
 	}
 
-	void drawShape() {
+	private void drawShape(Vec_Guo[] shape) {
 		int len = shape.length;
 		for (int i = 0; i < len; i++) {
 			int n = (i + 1) % len;
@@ -86,27 +85,8 @@ public class Example extends PApplet {
 		}
 
 		beginShape();
-		for (int i = 0; i < len; i++) {
-			vertex((float) shape[i].x, (float) shape[i].y, shapeHeight);
-		}
-		endShape(CLOSE);
-	}
-	
-	void drawShape2() {
-		int len = shape2.length;
-		for (int i = 0; i < len; i++) {
-			int n = (i + 1) % len;
-			beginShape();
-			vertex((float) shape2[i].x, (float) shape2[i].y);
-			vertex((float) shape2[i].x, (float) shape2[i].y, shapeHeight);
-			vertex((float) shape2[n].x, (float) shape2[n].y, shapeHeight);
-			vertex((float) shape2[n].x, (float) shape2[n].y);
-			endShape(CLOSE);
-		}
-
-		beginShape();
-		for (int i = 0; i < len; i++) {
-			vertex((float) shape2[i].x, (float) shape2[i].y, shapeHeight);
+		for (Vec_Guo vec_guo : shape) {
+			vertex((float) vec_guo.x, (float) vec_guo.y, shapeHeight);
 		}
 		endShape(CLOSE);
 	}
