@@ -12,7 +12,7 @@ import wblut.processing.WB_Render;
  * @create 2021-02-20 15:20
  */
 
-public class ZTestInteractiveSun extends PApplet {
+class ZTestInteractiveSun extends PApplet {
     public static void main(String[] args) {
         PApplet.main("computation.ZTestInteractiveSun");
     }

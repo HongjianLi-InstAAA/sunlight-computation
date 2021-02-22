@@ -11,7 +11,7 @@ import wblut.processing.WB_Render;
  * @create 2021-02-8 17:39
  */
 
-public class ZTestSun extends PApplet {
+class ZTestSun extends PApplet {
     public static void main(String[] args) {
         PApplet.main("computation.ZTestSun");
     }
