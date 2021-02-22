@@ -26,9 +26,7 @@ public class CtrlPanel extends PApplet {
 
     private static void updateArray(int[] origin, int[] target) {
         if (null != origin && null != target) {
-            for (int i = 0; i < origin.length; i++) {
-                origin[i] = target[i];
-            }
+            System.arraycopy(target, 0, origin, 0, origin.length);
         }
     }
 
