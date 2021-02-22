@@ -278,7 +278,7 @@ public class SolarCalculator {
 		Vec_Guo pos = solarCircleBottom.dup().mul(cos);
 		pos.add(solarOutDirection.dup().mul(sin));
 
-		// circle move alone the normal according to the date(consider the date)
+		// circle move along the normal according to the date(consider the date)
 		pos.add(d);
 
 		// position on unit sphere

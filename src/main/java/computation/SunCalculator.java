@@ -10,24 +10,31 @@ import java.util.List;
 /**
  * sun calculator for any location, date or time
  *
- * @author Wu
  * @ref https://www.pveducation.org/pvcdrom/properties-of-sunlight/solar-time
+ * @author Wu
  * @create 2021-02-8 8:58
  */
 
 public class SunCalculator {
+
     public static final int groundRadius = 1000;
+
+    /**
+     * default location, date, local time
+     */
     public static final int[] Nanjing = new int[]{117, 24};
+    public static final int[] summerSolstice = new int[]{6, 22};
     public static final int[] winterSolstice = new int[]{12, 22};
-    public static final int[] noon = new int[]{12, 0};
+    public static final int[] highNoon = new int[]{12, 0};
 
     private static final WB_GeometryFactory gf = new WB_GeometryFactory();
 
     /**
      * count days from the start of a year (Jan. 1st)
      *
-     * @param
-     * @return
+     * @param month integer in [1, 12]
+     * @param day   integer in [1, 31]
+     * @return integer in [1, 365]
      */
     private static int countDays(int month, int day) {
         checkDate(month, day);
@@ -44,11 +51,24 @@ public class SunCalculator {
         return dayCount;
     }
 
+    /**
+     * convert HH:MM to time in hours
+     *
+     * @param hour   integer in [1, 12]
+     * @param minute integer in [0, 59]
+     * @return double in [0, 24]
+     */
     private static double hhmm2hours(int hour, int minute) {
         checkTime(hour, minute);
         return hour + minute / 60.;
     }
 
+    /**
+     * convert time in hours to HH:MM
+     *
+     * @param hours double in [0, 24]
+     * @return int[]
+     */
     private static int[] hours2hhmm(double hours) {
         if (Double.isNaN(hours))
             return null;
@@ -59,6 +79,12 @@ public class SunCalculator {
         }
     }
 
+    /**
+     * convert time in hours to HH:MM in String
+     *
+     * @param hours double in [0, 24]
+     * @return String[]
+     */
     private static String[] hours2hhmmStr(double hours) {
         if (Double.isNaN(hours))
             return null;
@@ -84,8 +110,8 @@ public class SunCalculator {
     /**
      * check if the input location is valid
      *
-     * @param
-     * @return
+     * @param lon double in [-180, 180]
+     * @param lat double in [-90, 90]
      */
     private static void checkLonLat(double lon, double lat) {
         if (lon <= -180 || lon >= 180)
@@ -99,8 +125,8 @@ public class SunCalculator {
     /**
      * check if the input date is valid
      *
-     * @param
-     * @return
+     * @param month integer in [1, 12]
+     * @param day   integer in [1, 31]
      */
     private static void checkDate(int month, int day) {
         if (month < 1 || month > 12)
@@ -122,8 +148,8 @@ public class SunCalculator {
     /**
      * check if input time is valid
      *
-     * @param
-     * @return
+     * @param hour   integer in [1, 12]
+     * @param minute integer in [0, 59]
      */
     private static void checkTime(int hour, int minute) {
         if (hour == 24 && minute == 0)
@@ -136,19 +162,30 @@ public class SunCalculator {
                     "Minute must be between 00 and 59: " + minute);
     }
 
+    /**
+     * check if input time is valid
+     *
+     * @param hours double in [0, 24]
+     */
     private static void checkTime(double hours) {
         if (hours < 0 || hours > 24)
             throw new IllegalArgumentException(
                     "Hours must be between 0 and 24: " + hours);
     }
 
+    /**
+     * check if trigonometric value is valid
+     *
+     * @param d double
+     * @return double in [-1, 1]
+     */
     private static double boundTrigonometry(double d) {
         return Math.max(Math.min(d, 1), -1);
     }
 
-    /*=========================================================================================*/
+    /*===========================================================================*/
 
-    private double longitude, latitude, lonRad, latRad;
+    private double longitude, latitude, latRad;
     private int month, day;
     private double localTime;
     private int[] location, date, time;
@@ -166,34 +203,30 @@ public class SunCalculator {
      */
     private double azimuth;
 
+    private final WB_Circle ground;
     private WB_Vector pos;
-    private WB_Circle ground;
     private int pathDiv = 30;
     private WB_PolyLine path;
-    private boolean polar;
 
     public SunCalculator() {
         setLocalPosition(Nanjing[0], Nanjing[1]);
         setDate(winterSolstice[0], winterSolstice[1]);
-        setTime(noon[0], noon[1]);
+        setTime(highNoon[0], highNoon[1]);
 
         ground = gf.createCircleWithRadius(WB_Vector.ZERO(), groundRadius);
-        polar = false;
     }
 
     public SunCalculator(double lon, double lat) {
         setLocalPosition(lon, lat);
         setDate(winterSolstice[0], winterSolstice[1]);
-        setTime(noon[0], noon[1]);
+        setTime(highNoon[0], highNoon[1]);
 
         ground = gf.createCircleWithRadius(WB_Vector.ZERO(), groundRadius);
-        polar = false;
     }
 
     public void setLocalPosition(double lon, double lat) {
         checkLonLat(lon, lat);
         longitude = lon;
-        lonRad = Math.toRadians(longitude);
         latitude = lat;
         latRad = Math.toRadians(latitude);
 
@@ -205,7 +238,7 @@ public class SunCalculator {
         this.month = month;
         this.day = day;
         dayCounter = countDays(month, day);
-        date=new int[]{this.month, this.day};
+        date = new int[]{this.month, this.day};
 
         delta = calDeclination();
         deltaRad = Math.toRadians(delta);
@@ -267,20 +300,18 @@ public class SunCalculator {
         if (null != sunrise)
             System.out.printf("Sunrise\t%s:%s\n", sunrise[0], sunrise[1]);
         else
-            System.out.printf("Sunrise\tNaN\n");
+            System.out.print("Sunrise\tNaN\n");
         String[] sunset = hours2hhmmStr(sunriseSunset[1]);
         if (null != sunset)
             System.out.printf("Sunset\t%s:%s\n", sunset[0], sunset[1]);
         else
-            System.out.printf("Sunset\tNaN\n");
+            System.out.print("Sunset\tNaN\n");
     }
 
     /**
      * Equation of Time (EoT): 用于校正地球轨道的偏心率和地轴倾斜
-     * in minutes
      *
-     * @param
-     * @return
+     * @return double in minutes
      */
     private double calEoT() {
         double bRad = Math.toRadians(calB());
@@ -288,10 +319,9 @@ public class SunCalculator {
     }
 
     /**
-     * in degrees
+     * B
      *
-     * @param
-     * @return
+     * @return double in degrees
      */
     private double calB() {
         return 360. / 365 * (dayCounter - 81);
@@ -299,12 +329,10 @@ public class SunCalculator {
 
     /**
      * Local Standard Time Meridian (LSTM)
-     * in degrees
-     * deltaGMT: difference of the Local Time (LT)
-     * from Greenwich Mean Time (GMT) in hours
+     * *
+     * deltaGMT: difference of the Local Time (LT) (LT) from Greenwich Mean Time (GMT) in hours
      *
-     * @param
-     * @return
+     * @return double in degrees
      */
     private double calLSTM() {
         int deltaGMT = (int) Math.round(longitude / 15);
@@ -313,10 +341,8 @@ public class SunCalculator {
 
     /**
      * Time Correction Factor (TC)
-     * in minutes
      *
-     * @param
-     * @return
+     * @return double in minutes
      */
     private double calTC() {
         double LSTM = calLSTM();
@@ -325,10 +351,8 @@ public class SunCalculator {
 
     /**
      * Local Solar Time (LST)
-     * in hours
      *
-     * @param
-     * @return
+     * @return double in hours
      */
     private double calLST() {
         return localTime + TC / 60;
@@ -336,14 +360,13 @@ public class SunCalculator {
 
     /**
      * Hour Angle (HRA)
-     * in degrees
+     * *
      * between -180° and 180°
      * noon - 0°
      * A.M. - negative
      * P.M. - positive
      *
-     * @param
-     * @return
+     * @return double in degrees
      */
     private double calHRA() {
         double LST = calLST();
@@ -352,10 +375,8 @@ public class SunCalculator {
 
     /**
      * declination [delta] - 偏角
-     * in degrees
      *
-     * @param
-     * @return
+     * @return double in degrees
      */
     private double calDeclination() {
         return 23.45 * Math.sin(Math.toRadians(calB()));
@@ -363,11 +384,10 @@ public class SunCalculator {
 
     /**
      * Elevation [alpha] - 仰角
-     * in radians
+     * *
      * between 0 and PI/2
      *
-     * @param
-     * @return
+     * @return double in radians
      */
     private double calElevation() {
         double sine = Math.sin(deltaRad) * Math.sin(latRad) +
@@ -379,10 +399,8 @@ public class SunCalculator {
 
     /**
      * max elevation - 最大仰角
-     * in radians
      *
-     * @param
-     * @return
+     * @return double in radians
      */
     private double calMaxElevation() {
         return Math.PI / 2 + latRad - deltaRad;
@@ -390,14 +408,13 @@ public class SunCalculator {
 
     /**
      * Azimuth - 方位角
-     * in radians
+     * *
      * north - 0
      * east - PI/2
      * south - PI
      * west - PI*3/2
      *
-     * @param
-     * @return
+     * @return double in radians
      */
     private double calAzimuth() {
         double cosine = (Math.sin(deltaRad) * Math.cos(latRad) -
@@ -413,8 +430,7 @@ public class SunCalculator {
     /**
      * sunrise time & sunset time
      *
-     * @param
-     * @return
+     * @return double[] in hours
      */
     private double[] calSunriseSunset() {
         double cosine = -Math.tan(latRad) * Math.tan(deltaRad);
@@ -424,13 +440,11 @@ public class SunCalculator {
                 Math.acos(boundTrigonometry(cosine)) - TC / 60;
 
         if (sunrise < 0) {
-            polar = true;
             sunrise = 0;
             sunset = hhmm2hours(23, 59);
         }
 
         if (sunrise == sunset) {
-            polar = true;
             sunrise = 0;
             sunset = 0;
         }
@@ -441,7 +455,7 @@ public class SunCalculator {
     public void calSunPath() {
         double curTime = localTime;
         List<WB_Vector> pathPoints = new ArrayList<>();
-        double[] sunriseSunset = calSunriseSunset();
+//        double[] sunriseSunset = calSunriseSunset();
         double step = /*(sunriseSunset[1] - sunriseSunset[0])*/24. / (pathDiv - 1);
 
         for (int i = 0; i < pathDiv; i++) {
@@ -450,7 +464,6 @@ public class SunCalculator {
             pathPoints.add(pos);
         }
 
-//        if (polar)
         pathPoints.add(pathPoints.get(0));
         path = gf.createPolyLine(pathPoints);
         setTime(curTime);
@@ -478,19 +491,6 @@ public class SunCalculator {
         app.stroke(0, 0, 255);
         app.strokeWeight(3);
         render.drawPolyLine(path);
-
-//        for (int i = 0; i < path.getNumberOfPoints(); i++) {
-//            WB_Coord v = path.getPoint(i);
-//
-//            app.fill(0);
-//            app.textSize(50);
-//            app.text(Integer.toString(i), v.xf(), v.yf(), v.zf());
-//
-//            app.stroke(150, 100, 0);
-//            app.strokeWeight(10);
-//            app.point(v.xf(), v.yf(), v.zf());
-//        }
-
         app.popStyle();
     }
 
