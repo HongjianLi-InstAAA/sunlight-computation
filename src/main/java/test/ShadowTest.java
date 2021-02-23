@@ -77,9 +77,10 @@ public class ShadowTest extends PApplet {
         date = sun.getDate();
         time = sun.getTime();
 
-        base = PolyHandler.gf.createPolygonWithHole(PolyHandler.reversePts(shape),
+        base = PolyHandler.gf.createPolygonWithHole(
+                PolyHandler.reversePts(shape),
                 PolyHandler.reversePts(hole));
-//        base = TO_Polygon.gf.createSimplePolygon(Shadow.reversePts(shape));
+//        base = PolyHandler.gf.createSimplePolygon(Shadow.reversePts(shape));
         HEC_Polygon creator = new HEC_Polygon(base, shapeHeight);
         mesh = new HE_Mesh(creator);
         pas = new ArrayList<>();

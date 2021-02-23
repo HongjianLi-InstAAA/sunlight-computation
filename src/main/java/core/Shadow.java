@@ -96,9 +96,11 @@ public class Shadow {
         int[] ptsPerContour = base.getNumberOfPointsPerContour();
         Geometry[] shadows = new Geometry[ptsPerContour.length + 1];
 
+        // holes LinearRing[], if any
         LinearRing[] holes = null;
         if (ptsPerContour.length > 1)
             holes = new LinearRing[ptsPerContour.length - 1];
+        // edge shadow of each LinearRing
         for (int i = 0; i < ptsPerContour.length; i++) {
             int startID = sumFirstNElements(ptsPerContour, i);
             int endID = startID + ptsPerContour[i] - 1;
@@ -112,11 +114,13 @@ public class Shadow {
             }
         }
 
+        // shell LinearRing
         WB_Coord[] shellCoords = new WB_Coord[ptsPerContour[0]];
         System.arraycopy(coords, 0, shellCoords, 0, shellCoords.length);
         LinearRing shell = PolyHandler.JTSgf.createLinearRing(
                 PolyHandler.createLinearRingCoordinates(shellCoords));
 
+        // building base to union with edge shadows
         if (ptsPerContour.length > 1)
             shadows[shadows.length - 1] = PolyHandler.JTSgf.createPolygon(shell, holes);
         else

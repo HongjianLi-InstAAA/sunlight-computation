@@ -50,7 +50,7 @@ public class PolyHandler {
     }
 
     /**
-     * get shell points of WB_Poygon in CCW
+     * get shell points of WB_Polygon in AntiClockWise
      *
      * @param poly WB_Polygon
      * @return WB_Coord[]
@@ -67,7 +67,7 @@ public class PolyHandler {
     }
 
     /**
-     * get inner points of WB_Polygon in CW
+     * get inner points of WB_Polygon in ClockWise
      *
      * @param poly WB_Polygon
      * @return WB_Point[][]
@@ -90,7 +90,8 @@ public class PolyHandler {
     }
 
     /**
-     * out points in CountorClockWise, inner points in ClockWise
+     * out points in AntiClockWise
+     * inner points in ClockWise
      *
      * @param out shell polygon
      * @param in  hole polygon
@@ -207,8 +208,8 @@ public class PolyHandler {
     }
 
     /**
-     * convert simple WB_Polygon to JTS Polygon<br>
-     * to be finished if there is a inner ring<br>
+     * convert simple WB_Polygon to JTS Polygon
+     * to be finished if there is a inner ring
      *
      * @param poly WB_Polygon
      * @return JTS Polygon
@@ -264,7 +265,7 @@ public class PolyHandler {
     }
 
     /**
-     * apply Transform to hemesh polygon
+     * apply Transform to HE_Mesh polygon
      *
      * @param poly WB_Polygon
      * @param T    WB_Transform3D
@@ -298,7 +299,7 @@ public class PolyHandler {
         return ptsT;
     }
 
-    public static List<WB_Polygon> getTrimed(WB_Polygon trimPoly, List<WB_Polygon> polysToTrim) {
+    public static List<WB_Polygon> getTrimmed(WB_Polygon trimPoly, List<WB_Polygon> polysToTrim) {
         ArrayList<WB_Polygon> polys = new ArrayList<>();
         Polygon trimJTS = toJTSPolygon(trimPoly);
 
