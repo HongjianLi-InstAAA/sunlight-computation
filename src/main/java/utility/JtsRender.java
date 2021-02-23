@@ -1,4 +1,4 @@
-package computation;
+package utility;
 
 import org.locationtech.jts.geom.*;
 import org.locationtech.jts.triangulate.ConformingDelaunayTriangulationBuilder;
@@ -6,11 +6,12 @@ import org.locationtech.jts.triangulate.VoronoiDiagramBuilder;
 import processing.core.PApplet;
 
 /**
- * Render of JTS datum in Processing 
- * @author by Li Biao & Zhang Baizhou
- * */
+ * Render of JTS datum in Processing
+ *
+ * @author Li Biao & Zhang Baizhou
+ */
 
-class JtsRender {
+public class JtsRender {
     public static GeometryFactory gf = new GeometryFactory();
 
     PApplet app;

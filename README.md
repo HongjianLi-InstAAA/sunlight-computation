@@ -1,1 +1,1 @@
-# sunlight-computation
+# sunlight-core

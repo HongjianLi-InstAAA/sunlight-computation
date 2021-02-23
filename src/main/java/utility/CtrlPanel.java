@@ -1,5 +1,6 @@
-package computation;
+package utility;
 
+import core.Sun;
 import controlP5.*;
 import processing.core.PApplet;
 import wblut.geom.WB_Vector;
@@ -15,10 +16,12 @@ import wblut.geom.WB_Vector;
 
 public class CtrlPanel extends PApplet {
 
+    private static final int bgColor = 120;
+
     private static boolean isUpdate(int[] a, int[] b) {
         if (null != a && null != b) {
             for (int i = 0; i < a.length; i++)
-                if (a[i] - b[i] != 0)
+                if (a[i] != b[i])
                     return true;
         }
         return false;
@@ -120,7 +123,7 @@ public class CtrlPanel extends PApplet {
 
     public void draw() {
 //            System.out.println("inner draw-----------------------------");
-        background(120);
+        background(bgColor);
     }
 
     public int[] getLonLat() {

@@ -1,6 +1,7 @@
-package computation;
+package core;
 
 import org.locationtech.jts.geom.*;
+import utility.PolyHandler;
 import wblut.geom.WB_Coord;
 import wblut.geom.WB_Polygon;
 import wblut.geom.WB_Vector;
@@ -13,8 +14,6 @@ import wblut.geom.WB_Vector;
  */
 
 public class Shadow {
-    private static final GeometryFactory gf = new GeometryFactory();
-
     /**
      * building shadow vector
      *
@@ -38,7 +37,7 @@ public class Shadow {
      *
      * @param array int[]
      * @param n     first N elements
-     * @return Integer
+     * @return integer
      */
     private static int sumFirstNElements(int[] array, int n) {
         int sum = 0;
@@ -53,45 +52,6 @@ public class Shadow {
         }
         return sum;
     }
-
-    /**
-     * create a JTS Polygon from WB_Coord[]
-     *
-     * @param coords points of a polygon
-     * @return Polygon
-     */
-    private static Polygon createPolygon(WB_Coord... coords) {
-        Coordinate[] polyCoords = new Coordinate[coords.length + 1];
-        for (int i = 0; i < coords.length; i++) {
-            polyCoords[i] = new Coordinate(coords[i].xd(), coords[i].yd(), 0);
-        }
-        polyCoords[coords.length] = polyCoords[0];
-        return gf.createPolygon(polyCoords);
-    }
-
-    private static Coordinate[] createLinearRingCoordinates(WB_Coord[] coords) {
-        Coordinate[] coordinates = new Coordinate[coords.length + 1];
-        for (int i = 0; i < coords.length; i++) {
-            coordinates[i] = new Coordinate(coords[i].xd(), coords[i].yd(), 0);
-        }
-        coordinates[coordinates.length - 1] = coordinates[0];
-        return coordinates;
-    }
-
-    /**
-     * reverse the order of points in an array
-     *
-     * @param pts origin points
-     * @return WB_Coord[]
-     */
-    public static WB_Coord[] reversePts(WB_Coord[] pts) {
-        WB_Coord[] newPts = new WB_Coord[pts.length];
-        for (int i = 0; i < pts.length; i++) {
-            newPts[i] = pts[pts.length - 1 - i];
-        }
-        return newPts;
-    }
-
 
     /**
      * shadow of each edge, then union
@@ -114,10 +74,10 @@ public class Shadow {
             WB_Coord p2 = WB_Vector.add(p1, shadowVec);
             WB_Coord p3 = WB_Vector.add(p0, shadowVec);
 
-            geos[i - startID] = createPolygon(p0, p1, p2, p3);
+            geos[i - startID] = PolyHandler.createPolygon(p0, p1, p2, p3);
         }
 
-        GeometryCollection gc = gf.createGeometryCollection(geos);
+        GeometryCollection gc = PolyHandler.JTSgf.createGeometryCollection(geos);
         return gc.buffer(0);
     }
 
@@ -147,20 +107,22 @@ public class Shadow {
             if (i > 0) {
                 WB_Coord[] holeCoords = new WB_Coord[ptsPerContour[i]];
                 System.arraycopy(coords, startID, holeCoords, 0, holeCoords.length);
-                holes[i - 1] = gf.createLinearRing(createLinearRingCoordinates(holeCoords));
+                holes[i - 1] = PolyHandler.JTSgf.createLinearRing(
+                        PolyHandler.createLinearRingCoordinates(holeCoords));
             }
         }
 
         WB_Coord[] shellCoords = new WB_Coord[ptsPerContour[0]];
         System.arraycopy(coords, 0, shellCoords, 0, shellCoords.length);
-        LinearRing shell = gf.createLinearRing(createLinearRingCoordinates(shellCoords));
+        LinearRing shell = PolyHandler.JTSgf.createLinearRing(
+                PolyHandler.createLinearRingCoordinates(shellCoords));
 
         if (ptsPerContour.length > 1)
-            shadows[shadows.length - 1] = gf.createPolygon(shell, holes);
+            shadows[shadows.length - 1] = PolyHandler.JTSgf.createPolygon(shell, holes);
         else
-            shadows[shadows.length - 1] = gf.createPolygon(shell);
+            shadows[shadows.length - 1] = PolyHandler.JTSgf.createPolygon(shell);
 
-        GeometryCollection gc = gf.createGeometryCollection(shadows);
+        GeometryCollection gc = PolyHandler.JTSgf.createGeometryCollection(shadows);
         return gc.buffer(0);
     }
 }

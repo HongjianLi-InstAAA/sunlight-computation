@@ -1,7 +1,9 @@
-package computation;
+package test;
 
+import core.Sun;
 import gzf.gui.CameraController;
 import processing.core.PApplet;
+import utility.CtrlPanel;
 import wblut.geom.WB_Vector;
 import wblut.processing.WB_Render;
 
@@ -12,9 +14,9 @@ import wblut.processing.WB_Render;
  * @create 2021-02-20 15:20
  */
 
-public class ZTestInteractiveSun extends PApplet {
+public class InteractiveSunTest extends PApplet {
     public static void main(String[] args) {
-        PApplet.main("computation.ZTestInteractiveSun");
+        PApplet.main("test.InteractiveSunTest");
     }
 
     CameraController cam;

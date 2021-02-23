@@ -1,26 +1,35 @@
-package computation;
+package test;
 
+import core.Shadow;
+import core.Sun;
 import gzf.gui.CameraController;
 import org.locationtech.jts.geom.Geometry;
 import processing.core.PApplet;
-import wblut.geom.WB_GeometryFactory;
+import utility.CtrlPanel;
+import utility.JtsRender;
+import utility.PolyAnalysis;
+import utility.PolyHandler;
 import wblut.geom.WB_Polygon;
 import wblut.geom.WB_Vector;
 import wblut.hemesh.HEC_Polygon;
+import wblut.hemesh.HE_Face;
 import wblut.hemesh.HE_Mesh;
 import wblut.processing.WB_Render;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
+ * shadow calculator test
+ *
  * @author Wu
  * @create 2021-02-22 17:46
  */
 
-public class ZTestShadow extends PApplet {
+public class ShadowTest extends PApplet {
     public static void main(String[] args) {
-        PApplet.main("computation.ZTestShadow");
+        PApplet.main("test.ShadowTest");
     }
-
-    static final WB_GeometryFactory gf = new WB_GeometryFactory();
 
     CameraController cam;
     WB_Render render;
@@ -33,21 +42,22 @@ public class ZTestShadow extends PApplet {
     int[] location, date, time;
 
     WB_Vector[] shape = new WB_Vector[]{
-            new WB_Vector(-500, -500),
-            new WB_Vector(500, -500),
-            new WB_Vector(500, 200),
-            new WB_Vector(0, 200),
-            new WB_Vector(0, 500),
-            new WB_Vector(-500, 500)};
+            new WB_Vector(-50, -50),
+            new WB_Vector(50, -50),
+            new WB_Vector(50, 20),
+            new WB_Vector(0, 20),
+            new WB_Vector(0, 50),
+            new WB_Vector(-50, 50)};
     WB_Vector[] hole = new WB_Vector[]{
-            new WB_Vector(-200, 0),
-            new WB_Vector(100, 0),
-            new WB_Vector(100, -300),
-            new WB_Vector(-200, -300)};
+            new WB_Vector(-20, 0),
+            new WB_Vector(10, 0),
+            new WB_Vector(10, -30),
+            new WB_Vector(-20, -30)};
     WB_Polygon base;
     HE_Mesh mesh;
+    private List<PolyAnalysis> pas;
 
-    int shapeHeight = 30;
+    int shapeHeight = 15;
     Geometry shadow;
 
     public void settings() {
@@ -67,17 +77,23 @@ public class ZTestShadow extends PApplet {
         date = sun.getDate();
         time = sun.getTime();
 
-        base = gf.createPolygonWithHole(Shadow.reversePts(shape),
-                Shadow.reversePts(hole));
+        base = PolyHandler.gf.createPolygonWithHole(PolyHandler.reversePts(shape),
+                PolyHandler.reversePts(hole));
+//        base = TO_Polygon.gf.createSimplePolygon(Shadow.reversePts(shape));
         HEC_Polygon creator = new HEC_Polygon(base, shapeHeight);
         mesh = new HE_Mesh(creator);
+        pas = new ArrayList<>();
+        for (HE_Face f : mesh.getFaces()) {
+            pas.add(new PolyAnalysis(f.getPolygon()));
+        }
     }
 
     public void draw() {
         background(255);
         cam.drawSystem(Sun.groundRadius);
 
-        shadow = Shadow.calShadow(sun, gf.createPolygonWithHole(shape, hole), shapeHeight);
+        shadow = Shadow.calShadow(sun,
+                PolyHandler.gf.createPolygonWithHole(shape, hole), shapeHeight);
 
         sun.displayPath(render);
         sun.display(render);
@@ -95,7 +111,8 @@ public class ZTestShadow extends PApplet {
             fill(150);
         stroke(0);
         strokeWeight(1);
-        render.drawMeshEdges(mesh.toFacelistMesh());
+        for(PolyAnalysis p:pas)
+            p.draw(render);
         popStyle();
     }
 

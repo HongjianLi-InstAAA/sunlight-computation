@@ -1,7 +1,10 @@
-package computation;
+package core;
 
 import processing.core.PGraphics;
-import wblut.geom.*;
+import utility.PolyHandler;
+import wblut.geom.WB_Circle;
+import wblut.geom.WB_PolyLine;
+import wblut.geom.WB_Vector;
 import wblut.processing.WB_Render;
 
 import java.util.ArrayList;
@@ -10,14 +13,14 @@ import java.util.List;
 /**
  * sun calculator for any location, date or time
  *
- * @ref https://www.pveducation.org/pvcdrom/properties-of-sunlight/solar-time
  * @author Wu
+ * @ref https://www.pveducation.org/pvcdrom/properties-of-sunlight/solar-time
  * @create 2021-02-8 8:58
  */
 
 public class Sun {
 
-    public static final int groundRadius = 1000;
+    public static final int groundRadius = 100;
 
     /**
      * default location, date, local time
@@ -26,8 +29,6 @@ public class Sun {
     public static final int[] summerSolstice = new int[]{6, 22};
     public static final int[] winterSolstice = new int[]{12, 22};
     public static final int[] highNoon = new int[]{14, 0};
-
-    private static final WB_GeometryFactory gf = new WB_GeometryFactory();
 
     /**
      * count days from the start of a year (Jan. 1st)
@@ -203,6 +204,11 @@ public class Sun {
      */
     private double azimuth;
 
+    /**
+     * check whether the current date is polar day or polar night
+     */
+    private boolean polar = false;
+
     private final WB_Circle ground;
     private WB_Vector pos;
     private int pathDiv = 30;
@@ -213,15 +219,16 @@ public class Sun {
         setDate(winterSolstice[0], winterSolstice[1]);
         setTime(highNoon[0], highNoon[1]);
 
-        ground = gf.createCircleWithRadius(WB_Vector.ZERO(), groundRadius);
+        ground = PolyHandler.gf.createCircleWithRadius(WB_Vector.ZERO(), groundRadius);
     }
 
     public Sun(double lon, double lat) {
+        polar = false;
         setLocalPosition(lon, lat);
         setDate(winterSolstice[0], winterSolstice[1]);
         setTime(highNoon[0], highNoon[1]);
 
-        ground = gf.createCircleWithRadius(WB_Vector.ZERO(), groundRadius);
+        ground = PolyHandler.gf.createCircleWithRadius(WB_Vector.ZERO(), groundRadius);
     }
 
     public void setLocalPosition(double lon, double lat) {
@@ -446,15 +453,14 @@ public class Sun {
                 Math.acos(boundTrigonometry(cosine)) - TC / 60;
         double sunset = 12 + 1 / Math.toRadians(15) *
                 Math.acos(boundTrigonometry(cosine)) - TC / 60;
+        System.out.printf("raw - %.2f, %.2f\n", sunrise, sunset);
 
-        if (sunrise < 0) {
+        if (sunrise < 0 || sunset > 24 || sunrise == sunset) {
             sunrise = 0;
-            sunset = hhmm2hours(23, 59);
-        }
-
-        if (sunrise == sunset) {
-            sunrise = 0;
-            sunset = 0;
+            sunset = 24;
+            polar = true;
+        } else {
+            polar = false;
         }
 
         return new double[]{sunrise, sunset};
@@ -463,39 +469,51 @@ public class Sun {
     public void calSunPath() {
         double curTime = localTime;
         List<WB_Vector> pathPoints = new ArrayList<>();
-//        double[] sunriseSunset = calSunriseSunset();
-        double step = /*(sunriseSunset[1] - sunriseSunset[0])*/24. / (pathDiv - 1);
+        double[] sunriseSunset = calSunriseSunset();
+        double step = (sunriseSunset[1] - sunriseSunset[0])/*24.*/ / (pathDiv - 1);
 
         for (int i = 0; i < pathDiv; i++) {
-            double tempTime = /*sunriseSunset[0] +*/ i * step;
+            double tempTime = sunriseSunset[0] + i * step;
             this.setTime(tempTime);
             pathPoints.add(pos);
         }
 
-        pathPoints.add(pathPoints.get(0));
-        path = gf.createPolyLine(pathPoints);
+        if (polar)
+            pathPoints.add(pathPoints.get(0));
+
+        path = PolyHandler.gf.createPolyLine(pathPoints);
         setTime(curTime);
     }
 
+    /**
+     * display the sun
+     *
+     * @param render render in main program
+     */
     public void display(WB_Render render) {
         PGraphics app = render.getHome();
 
         app.pushStyle();
         app.noFill();
-        app.stroke(255, 0, 0);
+        app.stroke(255, 100, 0);
         app.strokeWeight(30);
         app.point(pos.xf(), pos.yf(), pos.zf());
         app.popStyle();
     }
 
+    /**
+     * display the ground and sun path
+     *
+     * @param render render in main program
+     */
     public void displayPath(WB_Render render) {
         PGraphics app = render.getHome();
 
         app.pushStyle();
-//        app.noFill();
-//        render.drawCircle(ground);
+        app.noFill();
+        render.drawCircle(ground);
 
-        app.stroke(0, 0, 255);
+        app.stroke(80, 170, 240);
         app.strokeWeight(3);
         render.drawPolyLine(path);
         app.popStyle();
