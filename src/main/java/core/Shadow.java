@@ -3,6 +3,7 @@ package core;
 import org.locationtech.jts.geom.*;
 import utility.PolyHandler;
 import wblut.geom.WB_Coord;
+import wblut.geom.WB_PolyLine;
 import wblut.geom.WB_Polygon;
 import wblut.geom.WB_Vector;
 
@@ -15,16 +16,44 @@ import wblut.geom.WB_Vector;
 
 public class Shadow {
     /**
+     * shadow at the current time
+     *
+     * @param sun      sun
+     * @param building building
+     * @return Geometry
+     */
+    public static Geometry calCurrentShadow(Sun sun, Building building){
+        return calShadow(sun.getPosition(), sun.getElevation(), building);
+    }
+
+    /**
+     * shadow of the all day
+     *
+     * @param sun      sun
+     * @param building building
+     * @return Geometry[]
+     */
+    public static Geometry[] calAllDayShadow(Sun sun, Building building) {
+        Geometry[] allDayShadow = new Geometry[sun.getPathDiv()];
+        WB_PolyLine path = sun.getPath();
+        double[] pathElevation = sun.getPathElevation();
+        for (int i = 0; i < allDayShadow.length; i++) {
+            allDayShadow[i] = calShadow(path.getPoint(i), pathElevation[i], building);
+        }
+        return allDayShadow;
+    }
+
+    /**
      * building shadow vector
      *
-     * @param sun specified sun
-     * @param H   building height
+     * @param pos    position of the sun
+     * @param alpha  elevation of the sun
+     * @param height building height in METERS
      * @return WB_Vector
      */
-    private static WB_Vector calShadowVector(Sun sun, int H) {
-        double alpha = sun.getElevation();
-        double shadowLength = H / Math.tan(alpha);
-        WB_Vector shadowVec = sun.getPosition().mul(-1);
+    private static WB_Vector calShadowVector(WB_Vector pos, double alpha, double height) {
+        double shadowLength = height / Math.tan(alpha);
+        WB_Vector shadowVec = pos.mul(-1);
 
         shadowVec.setZ(0);
         shadowVec.normalizeSelf();
@@ -56,16 +85,18 @@ public class Shadow {
     /**
      * shadow of each edge, then union
      *
-     * @param sun     specified sun
-     * @param coords  points of a polygon
-     * @param startID index of the starting points
-     * @param endID   index of the ending points
+     * @param pos      position of the sun
+     * @param alpha    elevation of the sun
+     * @param building building
+     * @param startID  index of the starting points
+     * @param endID    index of the ending points
      * @return Geometry
      */
-    private static Geometry calEdgeShadow(Sun sun, WB_Coord[] coords, int startID, int endID, int H) {
-        WB_Vector shadowVec = calShadowVector(sun, H);
+    private static Geometry calEdgeShadow(WB_Vector pos, double alpha, Building building, int startID, int endID) {
+        WB_Vector shadowVec = calShadowVector(pos, alpha, building.getHeight());
         Geometry[] geos = new Geometry[endID - startID + 1];
 
+        WB_Coord[] coords = building.getBase().getPoints().toArray();
         int edgeNums = endID - startID + 1;
 
         for (int i = startID; i < endID + 1; i++) {
@@ -84,14 +115,15 @@ public class Shadow {
     /**
      * shadow of a building, allowing holes
      *
-     * @param sun  specified sun
-     * @param base building base
-     * @param H    building height
+     * @param pos      position of the sun
+     * @param alpha    elevation of the sun
+     * @param building simple building
      * @return Geometry
      */
-    public static Geometry calShadow(Sun sun, WB_Polygon base, int H) {
-        if (sun.getPosition().zd() <= 0)
+    private static Geometry calShadow(WB_Vector pos, double alpha, Building building) {
+        if (pos.zd() <= 0)
             return null;
+        WB_Polygon base = building.getBase();
         WB_Coord[] coords = base.getPoints().toArray();
         int[] ptsPerContour = base.getNumberOfPointsPerContour();
         Geometry[] shadows = new Geometry[ptsPerContour.length + 1];
@@ -104,7 +136,7 @@ public class Shadow {
         for (int i = 0; i < ptsPerContour.length; i++) {
             int startID = sumFirstNElements(ptsPerContour, i);
             int endID = startID + ptsPerContour[i] - 1;
-            shadows[i] = calEdgeShadow(sun, coords, startID, endID, H);
+            shadows[i] = calEdgeShadow(pos, alpha, building, startID, endID);
 
             if (i > 0) {
                 WB_Coord[] holeCoords = new WB_Coord[ptsPerContour[i]];

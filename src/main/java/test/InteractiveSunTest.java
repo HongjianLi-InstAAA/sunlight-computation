@@ -40,7 +40,6 @@ public class InteractiveSunTest extends PApplet {
         panel = new CtrlPanel(panelLoc);
         sun = new Sun();
         sun.setPathDiv(50);
-        sun.calSunPath();
 
         location = sun.getLocation();
         date = sun.getDate();

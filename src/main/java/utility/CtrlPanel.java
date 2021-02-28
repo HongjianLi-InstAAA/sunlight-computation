@@ -153,19 +153,21 @@ public class CtrlPanel extends PApplet {
             return null;
     }
 
-    public void updateInput(Sun sun, int[] location, int[] date, int[] time) {
+    public boolean updateInput(Sun sun, int[] location, int[] date, int[] time) {
         boolean isUpdate = false;
 
         int[] inputLocation = getLonLat();
         if (null != inputLocation && isUpdate(location, inputLocation)) {
             updateArray(location,inputLocation);
             sun.setLocalPosition(location[0], location[1]);
+            sun.calSunPath();
             isUpdate = true;
         }
         int[] inputDate = getDate();
         if (null != inputDate && isUpdate(date, inputDate)) {
             updateArray(date,inputDate);
             sun.setDate(date[0], date[1]);
+            sun.calSunPath();
             isUpdate = true;
         }
         int[] inputTime = getTime();
@@ -176,9 +178,9 @@ public class CtrlPanel extends PApplet {
         }
 
         if (isUpdate) {
-            sun.calSunPath();
             sun.printInfo();
             System.out.println("/////////////////UPDATE//////////////");
         }
+        return isUpdate;
     }
 }

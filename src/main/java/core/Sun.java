@@ -12,6 +12,7 @@ import java.util.List;
 
 /**
  * sun calculator for any location, date or time
+ * Algorithm accuracy < 1°
  *
  * @author Wu
  * @ref https://www.pveducation.org/pvcdrom/properties-of-sunlight/solar-time
@@ -210,10 +211,13 @@ public class Sun {
      */
     private boolean polar = false;
 
+    private double sunlightDuration;
+
     private final WB_Circle ground;
     private WB_Vector pos;
     private int pathDiv = 30;
     private WB_PolyLine path;
+    private double[] pathElevation;
 
     public Sun() {
         this(Nanjing[0], Nanjing[1]);
@@ -223,7 +227,7 @@ public class Sun {
         setLocalPosition(lon, lat);
         setDate(winterSolstice[0], winterSolstice[1]);
         setTime(highNoon[0], highNoon[1]);
-
+        calSunPath();
         ground = PolyHandler.gf.createCircleWithRadius(WB_Vector.ZERO(), groundRadius);
     }
 
@@ -265,6 +269,7 @@ public class Sun {
 
     public void setPathDiv(int div) {
         this.pathDiv = div;
+        calSunPath();
     }
 
     public int[] getLocation() {
@@ -281,6 +286,22 @@ public class Sun {
 
     public double getElevation() {
         return alpha;
+    }
+
+    public double[] getPathElevation() {
+        return pathElevation;
+    }
+
+    public int getPathDiv() {
+        return pathDiv;
+    }
+
+    public WB_PolyLine getPath() {
+        return path;
+    }
+
+    public double getSunlightDuration() {
+        return sunlightDuration;
     }
 
     public WB_Vector getPosition() {
@@ -459,6 +480,7 @@ public class Sun {
             polar = false;
         }
 
+        sunlightDuration = sunset - sunrise;
         return new double[]{sunrise, sunset};
     }
 
@@ -466,17 +488,20 @@ public class Sun {
         double[] sunriseSunset = calSunriseSunset();
         if (polar && pos.zd() <= 0) {
             path = null;
+            pathElevation = null;
             return;
         }
 
         double curTime = localTime;
         List<WB_Vector> pathPoints = new ArrayList<>();
+        pathElevation = new double[pathDiv];
         double step = (sunriseSunset[1] - sunriseSunset[0])/*24.*/ / (pathDiv - 1);
 
         for (int i = 0; i < pathDiv; i++) {
             double tempTime = sunriseSunset[0] + i * step;
             this.setTime(tempTime);
             pathPoints.add(pos);
+            pathElevation[i] = getElevation();
         }
 
         if (polar)

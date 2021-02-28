@@ -33,7 +33,6 @@ public class SunTest extends PApplet {
         sun = new Sun(-29, 56);
         sun.setDate(12, 22);
         sun.setTime(12, 20);
-        sun.calSunPath();
 
         sun.printInfo();
     }

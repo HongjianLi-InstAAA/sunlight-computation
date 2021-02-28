@@ -19,6 +19,10 @@ public class PolyHandler {
     public static final WB_GeometryFactory gf = WB_GeometryFactory.instance();
     public static final GeometryFactory JTSgf = new GeometryFactory();
 
+    public static Coordinate toCoordinate(WB_Vector v) {
+        return new Coordinate(v.xd(), v.yf(), v.zf());
+    }
+
     /**
      * @param coords JTS coordinates
      * @return Coordinate[]

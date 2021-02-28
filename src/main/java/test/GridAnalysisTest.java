@@ -9,19 +9,22 @@ import processing.core.PApplet;
 import utility.CtrlPanel;
 import utility.JtsRender;
 import utility.PolyHandler;
+import wblut.geom.WB_GeometryOp;
 import wblut.geom.WB_Vector;
 import wblut.processing.WB_Render;
 
+import java.util.Objects;
+
 /**
- * shadow calculator test
+ * grid analysis of sunlight hours test
  *
  * @author Wu
- * @create 2021-02-22 17:46
+ * @create 2021-02-27 9:55
  */
 
-public class ShadowTest extends PApplet {
+public class GridAnalysisTest extends PApplet {
     public static void main(String[] args) {
-        PApplet.main("test.ShadowTest");
+        PApplet.main("test.GridAnalysisTest");
     }
 
     CameraController cam;
@@ -38,6 +41,7 @@ public class ShadowTest extends PApplet {
     int buildingHeight = 15;
 
     Geometry shadow;
+    WB_Vector sample = new WB_Vector(40, 30);
 
     public void settings() {
         size(1000, 800, P3D);
@@ -50,6 +54,7 @@ public class ShadowTest extends PApplet {
 
         panel = new CtrlPanel(panelLoc);
         sun = new Sun();
+        sun.setPathDiv(25);
 
         location = sun.getLocation();
         date = sun.getDate();
@@ -71,6 +76,16 @@ public class ShadowTest extends PApplet {
                 PolyHandler.reversePts(shell), PolyHandler.reversePts(hole)),
                 buildingHeight);
         shadow = Shadow.calCurrentShadow(sun, building);
+
+        Geometry[] allDayShadow = Shadow.calAllDayShadow(sun, building);
+        int counter = 0;
+        for (Geometry g : allDayShadow) {
+            if (null == g || !WB_GeometryOp.contains2D(sample,
+                    Objects.requireNonNull(PolyHandler.toWB_Polygon(g))))
+                counter++;
+        }
+        System.out.printf("counter: %d, duration: %.2f hours\n", counter,
+                sun.getSunlightDuration() * counter / sun.getPathDiv());
     }
 
     public void draw() {
@@ -79,8 +94,9 @@ public class ShadowTest extends PApplet {
 
         sun.displayPath(render);
         sun.display(render);
-        if (panel.updateInput(sun, location, date, time))
+        if (panel.updateInput(sun, location, date, time)) {
             shadow = Shadow.calCurrentShadow(sun, building);
+        }
 
         pushStyle();
         fill(0x30000000);
@@ -95,6 +111,10 @@ public class ShadowTest extends PApplet {
         stroke(0);
         strokeWeight(1);
         building.display(render);
+
+        stroke(0, 255, 0);
+        strokeWeight(10);
+        point(sample.xf(), sample.yf());
         popStyle();
     }
 
@@ -106,5 +126,4 @@ public class ShadowTest extends PApplet {
         if (key == 'p' || key == 'P')
             cam.perspective();
     }
-
 }
