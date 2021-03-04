@@ -29,7 +29,7 @@ public class Sun {
     public static final int[] Nanjing = new int[]{117, 24};
     public static final int[] summerSolstice = new int[]{6, 22};
     public static final int[] winterSolstice = new int[]{12, 22};
-    public static final int[] highNoon = new int[]{14, 0};
+    public static final int[] noon = new int[]{14, 0};
 
     /**
      * count days from the start of a year (Jan. 1st)
@@ -225,8 +225,8 @@ public class Sun {
 
     public Sun(double lon, double lat) {
         setLocalPosition(lon, lat);
-        setDate(winterSolstice[0], winterSolstice[1]);
-        setTime(highNoon[0], highNoon[1]);
+        setDate(summerSolstice[0], summerSolstice[1]);
+        setTime(noon[0], noon[1]);
         calSunPath();
         ground = PolyHandler.gf.createCircleWithRadius(WB_Vector.ZERO(), groundRadius);
     }
@@ -298,6 +298,10 @@ public class Sun {
 
     public WB_PolyLine getPath() {
         return path;
+    }
+
+    public boolean isPolar() {
+        return polar;
     }
 
     public double getSunlightDuration() {

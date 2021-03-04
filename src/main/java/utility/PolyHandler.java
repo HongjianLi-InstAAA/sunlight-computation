@@ -45,8 +45,7 @@ public class PolyHandler {
      */
     public static Coordinate[] subLast(Coordinate... coords) {
         Coordinate[] cs = new Coordinate[coords.length - 1];
-        int i = 0;
-        for (; i < coords.length - 1; i++) {
+        for (int i = 0; i < coords.length - 1; i++) {
             cs[i] = coords[i];
             cs[i].z = 0;
         }
@@ -166,13 +165,14 @@ public class PolyHandler {
      * @return WB_Polygon
      */
     public static WB_Polygon toWB_Polygon(Geometry g) {
-        if (g.getGeometryType().equalsIgnoreCase("Polygon")) {
+        if (null != g && g.getGeometryType().equalsIgnoreCase("Polygon")) {
             Polygon p = (Polygon) g;
             Coordinate[] coordOut = p.getExteriorRing().getCoordinates();
             coordOut = subLast(coordOut);
             WB_Point[] outPt = new WB_Point[coordOut.length];
             for (int i = 0; i < coordOut.length; i++) {
                 outPt[i] = new WB_Point(coordOut[i].x, coordOut[i].y, coordOut[i].z);
+//                System.out.printf("coord: %.2f, %.2f\n", coordOut[i].x, coordOut[i].y);
             }
             int num = p.getNumInteriorRing();
 
@@ -183,20 +183,61 @@ public class PolyHandler {
                 for (int i = 0; i < num; i++) {
                     Coordinate[] coords = p.getInteriorRingN(i).getCoordinates();
                     // LineString 也需sublast
+                    coords = subLast(coords);
                     // System.out.println(coords[0]+" &&
                     // "+coords[coords.length-1]);/
                     WB_Point[] pts = new WB_Point[coords.length];
                     for (int j = 0; j < coords.length; j++) {
-                        pts[j] = new WB_Point(coords[j].x, coords[j].y, coords[i].z);
+                        pts[j] = new WB_Point(coords[j].x, coords[j].y, coords[j].z);
                     }
                     ptsIn[i] = pts;
                 }
                 return new WB_Polygon(outPt, ptsIn);
             }
         } else {
-            System.out.println("this Geometry is not a Polygon!");
+//            System.out.println("this Geometry is not a Polygon!");
             return null;
         }
+    }
+
+    public static ArrayList<WB_Triangle> toWB_Triangles(Geometry g) {
+        if (null == g)
+            return null;
+        ArrayList<WB_Triangle> tris = new ArrayList<>();
+        List<WB_Polygon> polys = new ArrayList<>();
+
+        String type = g.getGeometryType();
+        if (type.equalsIgnoreCase("Polygon")) {
+            polys.add(toWB_Polygon(g));
+        } else if (type.equalsIgnoreCase("MultiPolygon")) {
+            int geoNum = g.getNumGeometries();
+            for (int i = 0; i < geoNum; i++) {
+                Geometry subGeo = g.getGeometryN(i);
+                polys.add(toWB_Polygon(subGeo));
+            }
+        } else {
+            return null;
+        }
+
+        for (WB_Polygon p : polys) {
+            tris.addAll(poly2tris(p));
+        }
+        return tris;
+    }
+
+    public static List<WB_Triangle> poly2tris(WB_Polygon poly) {
+        if (null == poly)
+            return null;
+        List<WB_Triangle> tris = new ArrayList<>();
+        final int[] triID = poly.getTriangles();
+        for (int i = 0; i < triID.length; i += 3) {
+            tris.add(gf.createTriangle(
+                    poly.getPoint(triID[i]),
+                    poly.getPoint(triID[i + 1]),
+                    poly.getPoint(triID[i + 2])
+            ));
+        }
+        return tris;
     }
 
     /**

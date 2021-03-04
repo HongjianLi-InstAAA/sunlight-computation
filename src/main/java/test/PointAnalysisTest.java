@@ -18,15 +18,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * grid analysis of sunlight hours test
+ * point analysis of sunlight hours test
  *
  * @author Wu
  * @create 2021-02-27 9:55
  */
 
-public class GridAnalysisTest extends PApplet {
+public class PointAnalysisTest extends PApplet {
     public static void main(String[] args) {
-        PApplet.main("test.GridAnalysisTest");
+        PApplet.main("test.PointAnalysisTest");
     }
 
     CameraController cam;
@@ -46,7 +46,7 @@ public class GridAnalysisTest extends PApplet {
     WB_Vector sample = new WB_Vector(40, 30);
     DurationAnalysis analysis;
 
-    boolean ifShowAllDayShadow, ifShowGrid;
+    boolean ifShowAllDayShadow;
     boolean alt;
 
     public void settings() {
@@ -110,7 +110,6 @@ public class GridAnalysisTest extends PApplet {
         update();
 
         ifShowAllDayShadow = false;
-        ifShowGrid = false;
         alt = false;
     }
 
@@ -152,20 +151,12 @@ public class GridAnalysisTest extends PApplet {
         strokeWeight(10);
         analysis.displaySample(this);
         popStyle();
-
-        if (ifShowGrid)
-            analysis.displayGrid(this);
     }
 
     private void update() {
         shadow = Shadow.calCurrentShadow(sun, buildings);
         analysis.update();
         analysis.pointAnalysis(sample);
-//            analysis.gridAnalysis(
-//                    new WB_Vector(-Sun.groundRadius, -Sun.groundRadius),
-//                    new WB_Vector(sun.groundRadius*2, sun.groundRadius*2),
-//                    40, 40
-//            );
     }
 
     public void keyPressed() {
@@ -181,8 +172,6 @@ public class GridAnalysisTest extends PApplet {
 
         if (key == 'a' || key == 'A')
             ifShowAllDayShadow = !ifShowAllDayShadow;
-        if (key == 'g' || key == 'G')
-            ifShowGrid = !ifShowGrid;
     }
 
     public void keyReleased(){

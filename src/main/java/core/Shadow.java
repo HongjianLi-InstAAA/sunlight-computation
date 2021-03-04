@@ -1,6 +1,8 @@
 package core;
 
-import org.locationtech.jts.geom.*;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryCollection;
+import org.locationtech.jts.geom.LinearRing;
 import utility.PolyHandler;
 import wblut.geom.WB_Coord;
 import wblut.geom.WB_PolyLine;
@@ -18,27 +20,41 @@ public class Shadow {
     /**
      * shadow at the current time
      *
-     * @param sun      sun
-     * @param building building
+     * @param sun       sun
+     * @param buildings buildings
      * @return Geometry
      */
-    public static Geometry calCurrentShadow(Sun sun, Building building){
-        return calShadow(sun.getPosition(), sun.getElevation(), building);
+    public static Geometry calCurrentShadow(Sun sun, Building... buildings) {
+        if (sun.getPosition().zd() <= 0)
+            return null;
+        Geometry[] geos = new Geometry[buildings.length];
+        for (int i = 0; i < geos.length; i++) {
+            geos[i] = calShadow(sun.getPosition(), sun.getElevation(), buildings[i]);
+        }
+        return unionShadow(geos);
     }
 
     /**
      * shadow of the all day
      *
-     * @param sun      sun
-     * @param building building
+     * @param sun       sun
+     * @param buildings buildings
      * @return Geometry[]
      */
-    public static Geometry[] calAllDayShadow(Sun sun, Building building) {
-        Geometry[] allDayShadow = new Geometry[sun.getPathDiv()];
+    public static Geometry[] calAllDayShadow(Sun sun, Building... buildings) {
         WB_PolyLine path = sun.getPath();
+        if (null == path)
+            return null;
+        Geometry[] allDayShadow = new Geometry[sun.getPathDiv() - 2];
         double[] pathElevation = sun.getPathElevation();
         for (int i = 0; i < allDayShadow.length; i++) {
-            allDayShadow[i] = calShadow(path.getPoint(i), pathElevation[i], building);
+            Geometry[] timeShadow = new Geometry[buildings.length];
+            for (int j = 0; j < timeShadow.length; j++) {
+                timeShadow[j] = calShadow(path.getPoint(i + 1),
+                        pathElevation[i + 1], buildings[j]);
+            }
+
+            allDayShadow[i] = unionShadow(timeShadow);
         }
         return allDayShadow;
     }
@@ -108,8 +124,7 @@ public class Shadow {
             geos[i - startID] = PolyHandler.createPolygon(p0, p1, p2, p3);
         }
 
-        GeometryCollection gc = PolyHandler.JTSgf.createGeometryCollection(geos);
-        return gc.buffer(0);
+        return unionShadow(geos);
     }
 
     /**
@@ -158,7 +173,17 @@ public class Shadow {
         else
             shadows[shadows.length - 1] = PolyHandler.JTSgf.createPolygon(shell);
 
-        GeometryCollection gc = PolyHandler.JTSgf.createGeometryCollection(shadows);
+        return unionShadow(shadows);
+    }
+
+    private static Geometry unionShadow(Geometry[] geos) {
+        if (geos.length == 1)
+            return geos[0];
+        for (Geometry g : geos) {
+            if (null == g)
+                return null;
+        }
+        GeometryCollection gc = PolyHandler.JTSgf.createGeometryCollection(geos);
         return gc.buffer(0);
     }
 }

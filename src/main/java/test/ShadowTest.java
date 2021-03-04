@@ -85,7 +85,7 @@ public class ShadowTest extends PApplet {
         pushStyle();
         fill(0x30000000);
         noStroke();
-        if (null != shadow)
+//        for (Geometry g : shadow)
             jtsRender.draw(shadow);
 
         if (sun.getPosition().zd() > 0)

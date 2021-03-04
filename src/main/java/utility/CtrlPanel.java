@@ -17,6 +17,7 @@ import wblut.geom.WB_Vector;
 public class CtrlPanel extends PApplet {
 
     private static final int bgColor = 120;
+    private static final int lineSpacing = 13;
 
     private static boolean isUpdate(int[] a, int[] b) {
         if (null != a && null != b) {
@@ -42,7 +43,7 @@ public class CtrlPanel extends PApplet {
     }
 
     public void settings() {
-        size(240, 400);
+        size(240, 450);
     }
 
     public void setup() {
@@ -82,7 +83,7 @@ public class CtrlPanel extends PApplet {
                 .setWidth(200)
                 .setHeight(15)
                 .setRange(1, 31)
-                .setValue(Sun.summerSolstice[1])
+                .setValue(Sun.summerSolstice[1] + 1)
                 .setDecimalPrecision(0)
                 .setNumberOfTickMarks(31)
                 .setSliderMode(controlP5.Slider.FLEXIBLE);
@@ -98,7 +99,7 @@ public class CtrlPanel extends PApplet {
                 .setPosition(leftMargin, topMargin + 250)
                 .setRadius(45)
                 .setRange(0, 23)
-                .setValue(Sun.highNoon[0])
+                .setValue(Sun.noon[0])
                 .setDecimalPrecision(0)
                 .setNumberOfTickMarks(23)
                 .setTickMarkLength(4)
@@ -110,13 +111,29 @@ public class CtrlPanel extends PApplet {
                 .setPosition(leftMargin + 105, topMargin + 250)
                 .setRadius(45)
                 .setRange(0, 59)
-                .setValue(Sun.highNoon[1])
+                .setValue(Sun.noon[1])
                 .setDecimalPrecision(0)
                 .setNumberOfTickMarks(59)
                 .setTickMarkLength(4)
                 .snapToTickMarks(true)
                 .setColorActive(color(80, 170, 240))
                 .setDragDirection(Knob.VERTICAL);
+
+        cp5.addTextlabel("instruction0")
+                .setText("select a point: ALT + left-click")
+                .setPosition(leftMargin, topMargin + 370)
+                .setColorValue(0xffffffff)
+        ;
+        cp5.addTextlabel("instruction1")
+                .setText("all day shadow : A")
+                .setPosition(leftMargin, topMargin + 370 + lineSpacing)
+                .setColorValue(0xffffffff)
+        ;
+        cp5.addTextlabel("instruction2")
+                .setText("grid analysis : G")
+                .setPosition(leftMargin, topMargin + 370 + lineSpacing * 2)
+                .setColorValue(0xffffffff)
+        ;
 
         popStyle();
     }
@@ -158,23 +175,27 @@ public class CtrlPanel extends PApplet {
 
         int[] inputLocation = getLonLat();
         if (null != inputLocation && isUpdate(location, inputLocation)) {
-            updateArray(location,inputLocation);
+            updateArray(location, inputLocation);
             sun.setLocalPosition(location[0], location[1]);
             sun.calSunPath();
             isUpdate = true;
+            System.out.println("location update=====================");
         }
         int[] inputDate = getDate();
         if (null != inputDate && isUpdate(date, inputDate)) {
-            updateArray(date,inputDate);
+            updateArray(date, inputDate);
             sun.setDate(date[0], date[1]);
             sun.calSunPath();
             isUpdate = true;
+            System.out.println("date update=====================");
         }
         int[] inputTime = getTime();
         if (null != inputTime && isUpdate(time, inputTime)) {
-            updateArray(time,inputTime);
+            updateArray(time, inputTime);
             sun.setTime(time[0], time[1]);
             isUpdate = true;
+            System.out.println("time update=====================");
+
         }
 
         if (isUpdate) {
