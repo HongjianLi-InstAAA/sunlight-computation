@@ -43,7 +43,7 @@ public class CtrlPanel extends PApplet {
     }
 
     public void settings() {
-        size(240, 450);
+        size(240, 460);
     }
 
     public void setup() {
@@ -125,13 +125,18 @@ public class CtrlPanel extends PApplet {
                 .setColorValue(0xffffffff)
         ;
         cp5.addTextlabel("instruction1")
-                .setText("all day shadow : A")
+                .setText("shadow : S")
                 .setPosition(leftMargin, topMargin + 370 + lineSpacing)
                 .setColorValue(0xffffffff)
         ;
         cp5.addTextlabel("instruction2")
-                .setText("grid analysis : G")
+                .setText("all day shadow : A")
                 .setPosition(leftMargin, topMargin + 370 + lineSpacing * 2)
+                .setColorValue(0xffffffff)
+        ;
+        cp5.addTextlabel("instruction3")
+                .setText("grid analysis : G")
+                .setPosition(leftMargin, topMargin + 370 + lineSpacing * 3)
                 .setColorValue(0xffffffff)
         ;
 
@@ -170,7 +175,12 @@ public class CtrlPanel extends PApplet {
             return null;
     }
 
-    public boolean updateInput(Sun sun, int[] location, int[] date, int[] time) {
+    public enum updateState {
+        UPDATE_PATH, UPDATE_TIME, NONE
+    }
+
+    public updateState updateInput(Sun sun, int[] location, int[] date, int[] time) {
+        updateState state = updateState.NONE;
         boolean isUpdate = false;
 
         int[] inputLocation = getLonLat();
@@ -180,6 +190,7 @@ public class CtrlPanel extends PApplet {
             sun.calSunPath();
             isUpdate = true;
             System.out.println("location update=====================");
+            state = updateState.UPDATE_PATH;
         }
         int[] inputDate = getDate();
         if (null != inputDate && isUpdate(date, inputDate)) {
@@ -188,20 +199,24 @@ public class CtrlPanel extends PApplet {
             sun.calSunPath();
             isUpdate = true;
             System.out.println("date update=====================");
+            state = updateState.UPDATE_PATH;
         }
+
+
         int[] inputTime = getTime();
         if (null != inputTime && isUpdate(time, inputTime)) {
             updateArray(time, inputTime);
             sun.setTime(time[0], time[1]);
             isUpdate = true;
             System.out.println("time update=====================");
-
+            state = updateState.UPDATE_TIME;
         }
 
         if (isUpdate) {
             sun.printInfo();
-            System.out.println("/////////////////UPDATE//////////////");
+//            System.out.println(state);
         }
-        return isUpdate;
+        return state;
     }
+
 }

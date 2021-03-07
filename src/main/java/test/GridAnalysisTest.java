@@ -35,7 +35,7 @@ public class GridAnalysisTest extends PApplet {
 
     Sun sun;
     CtrlPanel panel;
-    WB_Vector panelLoc = new WB_Vector(100, 100);
+    WB_Vector panelLoc = new WB_Vector(180, 115);
 
     int[] location, date, time;
 
@@ -46,7 +46,7 @@ public class GridAnalysisTest extends PApplet {
     WB_Vector sample = new WB_Vector(40, 30);
     DurationAnalysis analysis;
 
-    boolean ifShowAllDayShadow, ifShowGrid;
+    boolean ifShowShadow, ifShowAllDayShadow, ifShowGrid;
     boolean alt;
 
     public void settings() {
@@ -108,9 +108,11 @@ public class GridAnalysisTest extends PApplet {
 
         analysis = new DurationAnalysis(sun, buildings);
         update();
+        updateGrid();
 
+        ifShowShadow = false;
         ifShowAllDayShadow = false;
-        ifShowGrid = false;
+        ifShowGrid = true;
         alt = false;
     }
 
@@ -120,16 +122,24 @@ public class GridAnalysisTest extends PApplet {
 
         sun.displayPath(render);
         sun.display(render);
-        if (panel.updateInput(sun, location, date, time)) {
+
+        CtrlPanel.updateState state = panel.updateInput(sun, location, date, time);
+        if (CtrlPanel.updateState.NONE != state) {
             update();
+            if (state == CtrlPanel.updateState.UPDATE_PATH) {
+                analysis.update();
+                updateGrid();
+            }
         }
 
         pushStyle();
         // draw shadows
         fill(0x300000ff);
         noStroke();
-        if (null != shadow)
-            jtsRender.draw(shadow);
+        if (ifShowShadow) {
+            if (null != shadow)
+                jtsRender.draw(shadow);
+        }
 
         if (ifShowAllDayShadow) {
             fill(0x10000000);
@@ -137,7 +147,7 @@ public class GridAnalysisTest extends PApplet {
         }
 
         // draw buildings
-        if (sun.getPosition().zd() <= 0 && !sun.isPolar())
+        if (sun.getPosition().zd() <= 0)
             fill(150);
         else
             fill(255);
@@ -159,13 +169,16 @@ public class GridAnalysisTest extends PApplet {
 
     private void update() {
         shadow = Shadow.calCurrentShadow(sun, buildings);
-        analysis.update();
         analysis.pointAnalysis(sample);
-//            analysis.gridAnalysis(
-//                    new WB_Vector(-Sun.groundRadius, -Sun.groundRadius),
-//                    new WB_Vector(sun.groundRadius*2, sun.groundRadius*2),
-//                    40, 40
-//            );
+
+    }
+
+    private void updateGrid() {
+        analysis.gridAnalysis(
+                new WB_Vector(-Sun.groundRadius, -Sun.groundRadius),
+                new WB_Vector(Sun.groundRadius, Sun.groundRadius),
+                200, 200
+        );
     }
 
     public void keyPressed() {
@@ -179,13 +192,15 @@ public class GridAnalysisTest extends PApplet {
         if (keyCode == ALT)
             alt = true;
 
+        if (key == 's' || key == 'S')
+            ifShowShadow = !ifShowShadow;
         if (key == 'a' || key == 'A')
             ifShowAllDayShadow = !ifShowAllDayShadow;
         if (key == 'g' || key == 'G')
             ifShowGrid = !ifShowGrid;
     }
 
-    public void keyReleased(){
+    public void keyReleased() {
         if (keyCode == ALT)
             alt = false;
     }

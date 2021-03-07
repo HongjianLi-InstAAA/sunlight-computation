@@ -21,7 +21,7 @@ import java.util.List;
 
 public class Sun {
 
-    public static final int groundRadius = 100;
+    public static final int groundRadius = 500;
 
     /**
      * default location, date, local time
@@ -263,6 +263,7 @@ public class Sun {
                 .mul(groundRadius);
     }
 
+
     public void setTime(int hour, int minute) {
         setTime(hhmm2hours(hour, minute));
     }
@@ -300,10 +301,6 @@ public class Sun {
         return path;
     }
 
-    public boolean isPolar() {
-        return polar;
-    }
-
     public double getSunlightDuration() {
         return sunlightDuration;
     }
@@ -323,15 +320,15 @@ public class Sun {
 
     public void printInfo() {
         System.out.println(toString());
-        System.out.printf("Local Solar Time Meridian\t%.2f°\n", calLSTM());
-        System.out.printf("Equation of Time\t%.2f minutes\n", calEoT());
-        System.out.printf("Time Correction\t%.2f minutes\n", TC);
+//        System.out.printf("Local Solar Time Meridian\t%.2f°\n", calLSTM());
+//        System.out.printf("Equation of Time\t%.2f minutes\n", calEoT());
+//        System.out.printf("Time Correction\t%.2f minutes\n", TC);
 
         String[] LST = hours2hhmmStr(calLST());
         System.out.printf("Local Solar Time\t%s:%s\n", LST[0], LST[1]);
         System.out.printf("Declination\t%.2f°\n", delta);
 
-        System.out.printf("Hour Angle\t%.2f°\n", calHRA());
+//        System.out.printf("Hour Angle\t%.2f°\n", calHRA());
         System.out.printf("Elevation\t%.2f°\n", Math.toDegrees(alpha));
         System.out.printf("Azimuth\t%.2f°\n", Math.toDegrees(azimuth));
 
@@ -367,7 +364,8 @@ public class Sun {
     /**
      * Local Standard Time Meridian (LSTM)
      * *
-     * deltaGMT: difference of the Local Time (LT) (LT) from Greenwich Mean Time (GMT) in HOURS
+     * deltaGMT: difference of the Local Time (LT)
+     * from Greenwich Mean Time (GMT) in HOURS
      *
      * @return double in DEGREES
      */
@@ -490,12 +488,6 @@ public class Sun {
 
     public void calSunPath() {
         double[] sunriseSunset = calSunriseSunset();
-        if (polar && pos.zd() <= 0) {
-            path = null;
-            pathElevation = null;
-            return;
-        }
-
         double curTime = localTime;
         List<WB_Vector> pathPoints = new ArrayList<>();
         pathElevation = new double[pathDiv];
@@ -504,6 +496,12 @@ public class Sun {
         for (int i = 0; i < pathDiv; i++) {
             double tempTime = sunriseSunset[0] + i * step;
             this.setTime(tempTime);
+            if (polar && pos.zd() <= 0) {
+                path = null;
+                pathElevation = null;
+                setTime(curTime);
+                return;
+            }
             pathPoints.add(pos);
             pathElevation[i] = getElevation();
         }

@@ -35,7 +35,7 @@ public class PointAnalysisTest extends PApplet {
 
     Sun sun;
     CtrlPanel panel;
-    WB_Vector panelLoc = new WB_Vector(100, 100);
+    WB_Vector panelLoc = new WB_Vector(180, 115);
 
     int[] location, date, time;
 
@@ -46,7 +46,7 @@ public class PointAnalysisTest extends PApplet {
     WB_Vector sample = new WB_Vector(40, 30);
     DurationAnalysis analysis;
 
-    boolean ifShowAllDayShadow;
+    boolean ifShowShadow, ifShowAllDayShadow;
     boolean alt;
 
     public void settings() {
@@ -108,7 +108,7 @@ public class PointAnalysisTest extends PApplet {
 
         analysis = new DurationAnalysis(sun, buildings);
         update();
-
+        ifShowShadow = true;
         ifShowAllDayShadow = false;
         alt = false;
     }
@@ -119,16 +119,22 @@ public class PointAnalysisTest extends PApplet {
 
         sun.displayPath(render);
         sun.display(render);
-        if (panel.updateInput(sun, location, date, time)) {
+
+        CtrlPanel.updateState state = panel.updateInput(sun, location, date, time);
+        if (CtrlPanel.updateState.NONE != state) {
             update();
+            if (CtrlPanel.updateState.UPDATE_PATH == state)
+                analysis.update();
         }
 
         pushStyle();
         // draw shadows
         fill(0x300000ff);
         noStroke();
-        if (null != shadow)
-            jtsRender.draw(shadow);
+        if (ifShowShadow) {
+            if (null != shadow)
+                jtsRender.draw(shadow);
+        }
 
         if (ifShowAllDayShadow) {
             fill(0x10000000);
@@ -136,7 +142,7 @@ public class PointAnalysisTest extends PApplet {
         }
 
         // draw buildings
-        if (sun.getPosition().zd() <= 0 && !sun.isPolar())
+        if (sun.getPosition().zd() <= 0)
             fill(150);
         else
             fill(255);
@@ -155,7 +161,6 @@ public class PointAnalysisTest extends PApplet {
 
     private void update() {
         shadow = Shadow.calCurrentShadow(sun, buildings);
-        analysis.update();
         analysis.pointAnalysis(sample);
     }
 
@@ -170,11 +175,13 @@ public class PointAnalysisTest extends PApplet {
         if (keyCode == ALT)
             alt = true;
 
+        if (key == 's' || key == 'S')
+            ifShowShadow = !ifShowShadow;
         if (key == 'a' || key == 'A')
             ifShowAllDayShadow = !ifShowAllDayShadow;
     }
 
-    public void keyReleased(){
+    public void keyReleased() {
         if (keyCode == ALT)
             alt = false;
     }

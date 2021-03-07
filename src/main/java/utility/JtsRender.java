@@ -21,6 +21,8 @@ public class JtsRender {
     }
 
     public void draw(Geometry geo) {
+        if (null == geo)
+            return;
         String type = geo.getGeometryType();
         switch (type) {
             case "Point":
@@ -105,34 +107,34 @@ public class JtsRender {
 
 
     private void drawMultiPoint(Geometry geo) {
-        int v_num=geo.getNumGeometries();
-        Geometry[] geoms=new Geometry[v_num];
-        for(int i=0;i<v_num;i++) {
-            geoms[i]=geo.getGeometryN(i);
+        int v_num = geo.getNumGeometries();
+        Geometry[] geoms = new Geometry[v_num];
+        for (int i = 0; i < v_num; i++) {
+            geoms[i] = geo.getGeometryN(i);
         }
-        for(Geometry geom:geoms) {
+        for (Geometry geom : geoms) {
             drawPoint(geom);
         }
     }
 
     private void drawMultiLineString(Geometry geo) {
-        int v_num=geo.getNumGeometries();
-        Geometry[] geoms=new Geometry[v_num];
-        for(int i=0;i<v_num;i++) {
-            geoms[i]=geo.getGeometryN(i);
+        int v_num = geo.getNumGeometries();
+        Geometry[] geoms = new Geometry[v_num];
+        for (int i = 0; i < v_num; i++) {
+            geoms[i] = geo.getGeometryN(i);
         }
-        for(Geometry geom:geoms) {
+        for (Geometry geom : geoms) {
             drawLinearRing(geom);
         }
     }
 
     private void drawMultiPolygon(Geometry geo) {
-        int v_num=geo.getNumGeometries();
-        Geometry[] geoms=new Geometry[v_num];
-        for(int i=0;i<v_num;i++) {
-            geoms[i]=geo.getGeometryN(i);
+        int v_num = geo.getNumGeometries();
+        Geometry[] geoms = new Geometry[v_num];
+        for (int i = 0; i < v_num; i++) {
+            geoms[i] = geo.getGeometryN(i);
         }
-        for(Geometry geom:geoms) {
+        for (Geometry geom : geoms) {
             drawPolygon(geom);
         }
     }

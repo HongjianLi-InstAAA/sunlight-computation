@@ -30,7 +30,7 @@ public class ShadowTest extends PApplet {
 
     Sun sun;
     CtrlPanel panel;
-    WB_Vector panelLoc = new WB_Vector(100, 100);
+    WB_Vector panelLoc = new WB_Vector(180, 115);
 
     int[] location, date, time;
 
@@ -79,19 +79,21 @@ public class ShadowTest extends PApplet {
 
         sun.displayPath(render);
         sun.display(render);
-        if (panel.updateInput(sun, location, date, time))
+
+        if (CtrlPanel.updateState.NONE != panel.updateInput(sun, location, date, time))
             shadow = Shadow.calCurrentShadow(sun, building);
 
         pushStyle();
-        fill(0x30000000);
+        // draw shadows
+        fill(0x300000ff);
         noStroke();
-//        for (Geometry g : shadow)
-            jtsRender.draw(shadow);
+        jtsRender.draw(shadow);
 
-        if (sun.getPosition().zd() > 0)
-            fill(255);
-        else
+        // draw buildings
+        if (sun.getPosition().zd() <= 0)
             fill(150);
+        else
+            fill(255);
         stroke(0);
         strokeWeight(1);
         building.display(render);

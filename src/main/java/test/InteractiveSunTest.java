@@ -24,7 +24,7 @@ public class InteractiveSunTest extends PApplet {
 
     Sun sun;
     CtrlPanel panel;
-    WB_Vector panelLoc = new WB_Vector(100, 100);
+    WB_Vector panelLoc = new WB_Vector(180, 115);
 
     int[] location, date, time;
 
