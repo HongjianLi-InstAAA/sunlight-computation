@@ -177,7 +177,7 @@ public class GridAnalysisTest extends PApplet {
         analysis.gridAnalysis(
                 new WB_Vector(-Sun.groundRadius, -Sun.groundRadius),
                 new WB_Vector(Sun.groundRadius, Sun.groundRadius),
-                200, 200
+                100, 100
         );
     }
 
