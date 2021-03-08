@@ -23,6 +23,8 @@ import java.util.concurrent.TimeUnit;
  */
 
 public class DurationAnalysis {
+    private static final int THREAD_COUNT = 100;
+
     private final Sun sun;
     private final Building[] buildings;
     private Geometry[] allDayShadow;
@@ -64,37 +66,33 @@ public class DurationAnalysis {
         gridWidth = (float) ((rightTop.xd() - leftBottom.xd()) / col);
         gridHeight = (float) ((rightTop.yd() - leftBottom.yd()) / row);
 
-//        ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
-
+        long startTime = System.currentTimeMillis();
+        // multi-thread
+        ExecutorService fixedThreadPool = Executors.newFixedThreadPool(THREAD_COUNT);
         for (int i = 0; i < row; i++) {
             for (int j = 0; j < col; j++) {
-                // no multi-thread
-                samples[i][j] = new WB_Vector(
-                        leftBottom.xd() + (j + 0.5) * gridWidth,
-                        leftBottom.yd() + (i + 0.5) * gridHeight);
-                durations[i][j] = calDuration(samples[i][j]);
-
-                // multi-thread
-//                int finalI = i;
-//                int finalJ = j;
-//                cachedThreadPool.execute(() -> {
-//                    samples[finalI][finalJ] = new WB_Vector(
-//                            leftBottom.xd() + (finalJ + 0.5) * gridWidth,
-//                            leftBottom.yd() + (finalI + 0.5) * gridHeight);
-//                    durations[finalI][finalJ] = calDuration(samples[finalI][finalJ]);
-//                });
+                int finalI = i;
+                int finalJ = j;
+                fixedThreadPool.execute(() -> {
+                    samples[finalI][finalJ] = new WB_Vector(
+                            leftBottom.xd() + (finalJ + 0.5) * gridWidth,
+                            leftBottom.yd() + (finalI + 0.5) * gridHeight);
+                    durations[finalI][finalJ] = calDuration(samples[finalI][finalJ]);
+                });
             }
         }
-//        cachedThreadPool.shutdown();
-//        try {
-//            if (!cachedThreadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS)) {
-//                cachedThreadPool.shutdownNow();
-//                if (!cachedThreadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS))
-//                    System.out.println("Thread pool did not terminate.");
-//            }
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
+        fixedThreadPool.shutdown();
+        try {
+            if (!fixedThreadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS)) {
+                fixedThreadPool.shutdownNow();
+                if (!fixedThreadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS))
+                    System.out.println("Thread pool did not terminate.");
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        long endTime = System.currentTimeMillis();
+        System.out.printf("总耗时：%.2fs%n", (endTime - startTime) / 1e3);
     }
 
     private double calDuration(WB_Vector point) {

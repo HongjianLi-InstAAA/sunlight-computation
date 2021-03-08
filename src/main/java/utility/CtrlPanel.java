@@ -189,7 +189,7 @@ public class CtrlPanel extends PApplet {
             sun.setLocalPosition(location[0], location[1]);
             sun.calSunPath();
             isUpdate = true;
-            System.out.println("location update=====================");
+            System.out.println("///////////// location update /////////////");
             state = updateState.UPDATE_PATH;
         }
         int[] inputDate = getDate();
@@ -198,7 +198,7 @@ public class CtrlPanel extends PApplet {
             sun.setDate(date[0], date[1]);
             sun.calSunPath();
             isUpdate = true;
-            System.out.println("date update=====================");
+            System.out.println("///////////// date update /////////////");
             state = updateState.UPDATE_PATH;
         }
 
@@ -208,7 +208,7 @@ public class CtrlPanel extends PApplet {
             updateArray(time, inputTime);
             sun.setTime(time[0], time[1]);
             isUpdate = true;
-            System.out.println("time update=====================");
+            System.out.println("///////////// time update /////////////");
             state = updateState.UPDATE_TIME;
         }
 
