@@ -69,7 +69,7 @@ public class ShadowTest extends PApplet {
         building = new Building(PolyHandler.gf.createPolygonWithHole(
                 PolyHandler.reversePts(shell), PolyHandler.reversePts(hole)),
                 buildingHeight);
-        shadow = Shadow.calCurrentShadow(sun, building);
+        shadow = Shadow.calCurrentShadow(Shadow.Type.VOLUME, sun, building);
     }
 
     public void draw() {
@@ -80,7 +80,7 @@ public class ShadowTest extends PApplet {
         sun.display(render);
 
         if (CtrlPanel.updateState.NONE != panel.updateInput(sun, location, date, time))
-            shadow = Shadow.calCurrentShadow(sun, building);
+            shadow = Shadow.calCurrentShadow(Shadow.Type.VOLUME, sun, building);
 
         pushStyle();
         // draw shadows

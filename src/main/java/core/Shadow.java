@@ -1,15 +1,15 @@
 package core;
 
+import Jama.Matrix;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.LinearRing;
 import processing.core.PApplet;
 import utility.JtsRender;
 import utility.PolyHandler;
-import wblut.geom.WB_Coord;
-import wblut.geom.WB_Point;
-import wblut.geom.WB_PolyLine;
-import wblut.geom.WB_Polygon;
+import wblut.geom.*;
+
+import java.util.List;
 
 /**
  * shadow calculator for the sun at a given position
@@ -19,6 +19,8 @@ import wblut.geom.WB_Polygon;
  */
 
 public class Shadow {
+    public enum Type {VOLUME, FACET}
+
     /**
      * shadow at the current time
      *
@@ -26,12 +28,22 @@ public class Shadow {
      * @param buildings buildings
      * @return Geometry
      */
-    public static Geometry calCurrentShadow(Sun sun, Building... buildings) {
+    public static Geometry calCurrentShadow(Type type, Sun sun, Building... buildings) {
         if (sun.getPosition().zd() <= 0)
             return null;
         Geometry[] geos = new Geometry[buildings.length];
         for (int i = 0; i < geos.length; i++) {
-            geos[i] = calShadow(sun.getPosition(), sun.getElevation(), buildings[i]);
+            switch (type) {
+                case VOLUME:
+                    geos[i] = calShadowByVolume(
+                            sun.getPosition(), sun.getElevation(), buildings[i]);
+                    break;
+                case FACET:
+                    geos[i] = calShadowByFacet(sun.getPosition(), buildings[i]);
+                    break;
+                default:
+                    break;
+            }
         }
         return unionShadow(geos);
     }
@@ -43,23 +55,36 @@ public class Shadow {
      * @param buildings buildings
      * @return Geometry[]
      */
-    public static Geometry[] calAllDayShadow(Sun sun, Building... buildings) {
+    public static Geometry[] calAllDayShadow(Type type, Sun sun, Building... buildings) {
         WB_PolyLine path = sun.getPath();
         if (null == path)
             return null;
+
         Geometry[] allDayShadow = new Geometry[sun.getPathDiv() - 2];
         double[] pathElevation = sun.getPathElevation();
+
         for (int i = 0; i < allDayShadow.length; i++) {
             Geometry[] timeShadow = new Geometry[buildings.length];
             for (int j = 0; j < timeShadow.length; j++) {
-                timeShadow[j] = calShadow(path.getPoint(i + 1),
-                        pathElevation[i + 1], buildings[j]);
+                switch (type) {
+                    case VOLUME:
+                        timeShadow[j] = calShadowByVolume(path.getPoint(i + 1),
+                                pathElevation[i + 1], buildings[j]);
+                        break;
+                    case FACET:
+                        timeShadow[j] = calShadowByFacet(path.getPoint(i + 1), buildings[j]);
+                        break;
+                    default:
+                        break;
+                }
             }
 
             allDayShadow[i] = unionShadow(timeShadow);
         }
+
         return allDayShadow;
     }
+
 
     /**
      * building shadow vector
@@ -130,14 +155,64 @@ public class Shadow {
     }
 
     /**
-     * shadow of a building, allowing holes
+     * line-plane intersection
+     *
+     * @param line  line
+     * @param plane WB_Triangle
+     * @return WB_Point intersection point
+     */
+    private static WB_Point lineIntersectPlane(WB_Line line, WB_Triangle plane) {
+        WB_Point la = line.getPoint(0);
+        WB_Point lb = line.getPoint(1);
+
+        WB_Point p0 = (WB_Point) plane.getPoint(0);
+        WB_Point p1 = (WB_Point) plane.getPoint(1);
+        WB_Point p2 = (WB_Point) plane.getPoint(2);
+        Matrix m = new Matrix(new double[][]{
+                {la.xd() - lb.xd(), p1.xd() - p0.xd(), p2.xd() - p0.xd()},
+                {la.yd() - lb.yd(), p1.yd() - p0.yd(), p2.yd() - p0.yd()},
+                {la.zd() - lb.zd(), p1.zd() - p0.zd(), p2.zd() - p0.zd()}
+        }).inverse();
+        Matrix n = new Matrix(new double[][]{
+                {la.xd() - p0.xd()},
+                {la.yd() - p0.yd()},
+                {la.zd() - p0.zd()}
+        });
+
+        double t = m.times(n).get(0, 0);
+        return la.add(lb.sub(la).mul(t));
+    }
+
+    /**
+     * shadow of a triangular facet
+     *
+     * @param pos position of the sun
+     * @param tri triangular facet
+     * @return Geometry
+     */
+    private static Geometry calFacetShadow(WB_Point pos, WB_Triangle tri) {
+        WB_Point sunlight = pos.mul(-1);
+        WB_Point[] shadowPoints = new WB_Point[3];
+        for (int i = 0; i < shadowPoints.length; i++) {
+            WB_Coord origin = tri.getPoint(i);
+            WB_Line line = PolyHandler.gf.createLineThroughPoints(
+                    origin, WB_Point.add(origin, sunlight));
+            shadowPoints[i] = lineIntersectPlane(line, PolyHandler.XY_PLANE);
+        }
+
+        return PolyHandler.createPolygon(
+                shadowPoints[0], shadowPoints[1], shadowPoints[2]);
+    }
+
+    /**
+     * shadow of a extruded building, allowing holes
      *
      * @param pos      position of the sun
      * @param alpha    elevation of the sun
-     * @param building simple building
+     * @param building simple building in volume
      * @return Geometry
      */
-    private static Geometry calShadow(WB_Point pos, double alpha, Building building) {
+    private static Geometry calShadowByVolume(WB_Point pos, double alpha, Building building) {
         if (pos.zd() <= 0)
             return null;
         WB_Polygon base = building.getBase();
@@ -176,6 +251,24 @@ public class Shadow {
             shadows[shadows.length - 1] = PolyHandler.JTSgf.createPolygon(shell);
 
         return unionShadow(shadows);
+    }
+
+    /**
+     * shadow of a building in facets
+     *
+     * @param pos      position of the sun
+     * @param building complex building in facets
+     * @return Geometry
+     */
+    private static Geometry calShadowByFacet(WB_Point pos, Building building) {
+        if (pos.zd() <= 0)
+            return null;
+        List<WB_Triangle> tri = building.getTris();
+        Geometry[] geos = new Geometry[tri.size()];
+        for (int i = 0; i < geos.length; i++) {
+            geos[i] = calFacetShadow(pos, tri.get(i));
+        }
+        return unionShadow(geos);
     }
 
     private static Geometry unionShadow(Geometry[] geos) {

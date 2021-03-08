@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 public class DurationAnalysis {
     private static final int THREAD_COUNT = 25;
 
+    private final Shadow.Type type;
     private final Sun sun;
     private final Building[] buildings;
     private Geometry[] allDayShadow;
@@ -34,16 +35,22 @@ public class DurationAnalysis {
     private double duration; // in HOURS
     private WB_Point[][] samples;
     private double[][] durations;
+    private WB_Point leftBottom, rightTop;
     private float gridWidth, gridHeight;
 
     public DurationAnalysis(Sun sun, Building... buildings) {
+        this(Shadow.Type.VOLUME, sun, buildings);
+    }
+
+    public DurationAnalysis(Shadow.Type type, Sun sun, Building... buildings) {
+        this.type = type;
         this.sun = sun;
         this.buildings = buildings;
         update();
     }
 
     public void update() {
-        allDayShadow = Shadow.calAllDayShadow(sun, buildings);
+        allDayShadow = Shadow.calAllDayShadow(type, sun, buildings);
         if (null == allDayShadow)
             return;
         allDayShadowTris = new ArrayList<>();
@@ -62,6 +69,8 @@ public class DurationAnalysis {
 
     public void gridAnalysis(WB_Point leftBottom, WB_Point rightTop,
                              int row, int col) {
+        this.leftBottom = leftBottom;
+        this.rightTop = rightTop;
         samples = new WB_Point[row][col];
         durations = new double[row][col];
 
@@ -151,6 +160,11 @@ public class DurationAnalysis {
 
     public void displayGrid(PApplet app) {
         app.pushStyle();
+        app.rectMode(PConstants.CORNERS);
+        app.noFill();
+        app.stroke(0xffaa0000);
+        app.strokeWeight(3);
+        app.rect(leftBottom.xf(), leftBottom.yf(), rightTop.xf(), rightTop.yf());
         app.rectMode(PConstants.CENTER);
         app.noStroke();
         for (int i = 0; i < samples.length; i++) {

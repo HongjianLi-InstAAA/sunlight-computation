@@ -4,6 +4,7 @@ import processing.opengl.PGraphicsOpenGL;
 import wblut.geom.WB_Point;
 import wblut.geom.WB_Polygon;
 import wblut.geom.WB_Segment;
+import wblut.geom.WB_Triangle;
 import wblut.processing.WB_Render3D;
 
 /**
@@ -19,6 +20,13 @@ public class PolyAnalysis {
     public PolyAnalysis(WB_Polygon poly) {
         this.poly = poly;
         set();
+    }
+
+    public PolyAnalysis(WB_Triangle tri) {
+        this(PolyHandler.gf.createSimplePolygon(
+                tri.getPoint(0),
+                tri.getPoint(1),
+                tri.getPoint(2)));
     }
 
     private void set() {

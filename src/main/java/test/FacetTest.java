@@ -18,15 +18,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * point analysis of sunlight hours test
+ * facet shadow test
  *
  * @author Wu
- * @create 2021-02-27 9:55
+ * @create 2021-03-08 16:47
  */
 
-public class PointAnalysisTest extends PApplet {
+public class FacetTest extends PApplet {
     public static void main(String[] args) {
-        PApplet.main("test.PointAnalysisTest");
+        PApplet.main("test.FacetTest");
     }
 
     CameraController cam;
@@ -35,18 +35,19 @@ public class PointAnalysisTest extends PApplet {
 
     Sun sun;
     CtrlPanel panel;
-    int pathDiv = 50;
-
     int[] location, date, time;
+    int pathDiv = 50;
 
     Building[] buildings;
     int buildingHeight = 30;
 
+    Shadow.Type type = Shadow.Type.FACET;
     Geometry shadow;
     WB_Point sample;
     DurationAnalysis analysis;
+    int gridSubdiv = 100;
 
-    boolean ifShowShadow, ifShowAllDayShadow;
+    boolean ifShowShadow, ifShowAllDayShadow, ifShowGrid;
     boolean alt;
 
     public void settings() {
@@ -106,11 +107,14 @@ public class PointAnalysisTest extends PApplet {
         buildings = new Building[buildingList.size()];
         buildingList.toArray(buildings);
 
-        analysis = new DurationAnalysis(sun, buildings);
-        update();
+        analysis = new DurationAnalysis(type, sun, buildings);
         sample = PolyHandler.ORIGIN;
-        ifShowShadow = true;
+        update();
+        updateGrid();
+
+        ifShowShadow = false;
         ifShowAllDayShadow = false;
+        ifShowGrid = true;
         alt = false;
     }
 
@@ -124,8 +128,10 @@ public class PointAnalysisTest extends PApplet {
         CtrlPanel.updateState state = panel.updateInput(sun, location, date, time);
         if (CtrlPanel.updateState.NONE != state) {
             update();
-            if (CtrlPanel.updateState.UPDATE_PATH == state)
+            if (state == CtrlPanel.updateState.UPDATE_PATH) {
                 analysis.update();
+                updateGrid();
+            }
         }
 
         // draw buildings
@@ -141,11 +147,23 @@ public class PointAnalysisTest extends PApplet {
 
         // draw samples
         analysis.displaySample(this);
+        // draw grid
+        if (ifShowGrid)
+            analysis.displayGrid(this);
     }
 
     private void update() {
-        shadow = Shadow.calCurrentShadow(Shadow.Type.VOLUME, sun, buildings);
+        shadow = Shadow.calCurrentShadow(type, sun, buildings);
         analysis.pointAnalysis(sample);
+
+    }
+
+    private void updateGrid() {
+        analysis.gridAnalysis(
+                new WB_Point(-Sun.groundRadius, -Sun.groundRadius),
+                new WB_Point(Sun.groundRadius, Sun.groundRadius),
+                gridSubdiv, gridSubdiv
+        );
     }
 
     public void keyPressed() {
@@ -163,6 +181,8 @@ public class PointAnalysisTest extends PApplet {
             ifShowShadow = !ifShowShadow;
         if (key == 'a' || key == 'A')
             ifShowAllDayShadow = !ifShowAllDayShadow;
+        if (key == 'g' || key == 'G')
+            ifShowGrid = !ifShowGrid;
     }
 
     public void keyReleased() {

@@ -36,10 +36,12 @@ public class GridAnalysisTest extends PApplet {
     Sun sun;
     CtrlPanel panel;
     int[] location, date, time;
+    int pathDiv = 50;
 
     Building[] buildings;
     int buildingHeight = 30;
 
+    Shadow.Type type = Shadow.Type.VOLUME;
     Geometry shadow;
     WB_Point sample;
     DurationAnalysis analysis;
@@ -59,7 +61,7 @@ public class GridAnalysisTest extends PApplet {
 
         panel = new CtrlPanel();
         sun = new Sun();
-        sun.setPathDiv(30);
+        sun.setPathDiv(pathDiv);
 
         location = sun.getLocation();
         date = sun.getDate();
@@ -105,8 +107,8 @@ public class GridAnalysisTest extends PApplet {
         buildings = new Building[buildingList.size()];
         buildingList.toArray(buildings);
 
-        analysis = new DurationAnalysis(sun, buildings);
-        sample = PolyHandler.ZERO;
+        analysis = new DurationAnalysis(type, sun, buildings);
+        sample = PolyHandler.ORIGIN;
         update();
         updateGrid();
 
@@ -151,7 +153,7 @@ public class GridAnalysisTest extends PApplet {
     }
 
     private void update() {
-        shadow = Shadow.calCurrentShadow(sun, buildings);
+        shadow = Shadow.calCurrentShadow(type, sun, buildings);
         analysis.pointAnalysis(sample);
 
     }

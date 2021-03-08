@@ -2,6 +2,7 @@ package utility;
 
 import org.locationtech.jts.geom.*;
 import wblut.geom.*;
+import wblut.hemesh.HE_Mesh;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,7 +20,10 @@ public class PolyHandler {
     public static final WB_GeometryFactory gf = WB_GeometryFactory.instance();
     public static final GeometryFactory JTSgf = new GeometryFactory();
 
-    public static final WB_Point ZERO = new WB_Point(0, 0, 0);
+    public static final WB_Point ORIGIN = new WB_Point(0, 0, 0);
+    public static final WB_Point X_NORMAL = new WB_Point(1, 0, 0);
+    public static final WB_Point Y_NORMAL = new WB_Point(0, 1, 0);
+    public static final WB_Triangle XY_PLANE = gf.createTriangle(ORIGIN, X_NORMAL, Y_NORMAL);
 
     public static Coordinate toCoordinate(WB_Vector v) {
         return new Coordinate(v.xd(), v.yf(), v.zf());
@@ -46,6 +50,8 @@ public class PolyHandler {
      * @return Coordinate[]
      */
     public static Coordinate[] subLast(Coordinate... coords) {
+        if (coords.length < 2)
+            return null;
         Coordinate[] cs = new Coordinate[coords.length - 1];
         for (int i = 0; i < coords.length - 1; i++) {
             cs[i] = coords[i];
@@ -171,6 +177,8 @@ public class PolyHandler {
             Polygon p = (Polygon) g;
             Coordinate[] coordOut = p.getExteriorRing().getCoordinates();
             coordOut = subLast(coordOut);
+            if (null == coordOut)
+                return null;
             WB_Point[] outPt = new WB_Point[coordOut.length];
             for (int i = 0; i < coordOut.length; i++) {
                 outPt[i] = new WB_Point(coordOut[i].x, coordOut[i].y, coordOut[i].z);
@@ -222,7 +230,8 @@ public class PolyHandler {
         }
 
         for (WB_Polygon p : polys) {
-            tris.addAll(poly2tris(p));
+            if (null != p)
+                tris.addAll(poly2tris(p));
         }
         return tris;
     }
@@ -232,11 +241,27 @@ public class PolyHandler {
             return null;
         List<WB_Triangle> tris = new ArrayList<>();
         final int[] triID = poly.getTriangles();
-        for (int i = 0; i < triID.length; i += 3) {
+        for (int i = 0; i < triID.length - 2; i += 3) {
             tris.add(gf.createTriangle(
                     poly.getPoint(triID[i]),
                     poly.getPoint(triID[i + 1]),
                     poly.getPoint(triID[i + 2])
+            ));
+        }
+        return tris;
+    }
+
+    public static List<WB_Triangle> mesh2tris(HE_Mesh mesh) {
+        if (null == mesh)
+            return null;
+        mesh.triangulate();
+        List<WB_Triangle> tris = new ArrayList<>();
+        int[][] triID = mesh.getFacesAsInt();
+        for (int i = 0; i < triID.length; i++) {
+            tris.add(gf.createTriangle(
+                    mesh.getVertex(triID[i][0]),
+                    mesh.getVertex(triID[i][1]),
+                    mesh.getVertex(triID[i][2])
             ));
         }
         return tris;

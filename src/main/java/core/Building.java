@@ -2,7 +2,9 @@ package core;
 
 import processing.core.PGraphics;
 import utility.PolyAnalysis;
+import utility.PolyHandler;
 import wblut.geom.WB_Polygon;
+import wblut.geom.WB_Triangle;
 import wblut.hemesh.HEC_Polygon;
 import wblut.hemesh.HE_Face;
 import wblut.hemesh.HE_Mesh;
@@ -23,6 +25,7 @@ public class Building {
     private final double height;
 
     private final List<PolyAnalysis> pas;
+    private final List<WB_Triangle> tris;
 
     public Building(WB_Polygon base, double height) {
         this.base = base;
@@ -33,6 +36,17 @@ public class Building {
         for (HE_Face f : mesh.getFaces()) {
             pas.add(new PolyAnalysis(f.getPolygon()));
         }
+
+        tris = PolyHandler.mesh2tris(mesh);
+    }
+
+    public Building(List<WB_Triangle> tris) {
+        this.base = null;
+        this.height = 0;
+        this.tris = tris;
+        pas = new ArrayList<>();
+        for (WB_Triangle tri : tris)
+            pas.add(new PolyAnalysis(tri));
     }
 
     public WB_Polygon getBase() {
@@ -41,6 +55,10 @@ public class Building {
 
     public double getHeight() {
         return height;
+    }
+
+    public List<WB_Triangle> getTris() {
+        return tris;
     }
 
     public void display(Sun sun, WB_Render render) {
@@ -54,6 +72,8 @@ public class Building {
         app.strokeWeight(1);
         for (PolyAnalysis p : pas)
             p.draw(render);
+//        for (WB_Triangle t : tris)
+//            render.drawTriangle(t);
         app.popStyle();
     }
 }
