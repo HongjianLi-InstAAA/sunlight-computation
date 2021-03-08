@@ -19,6 +19,8 @@ public class PolyHandler {
     public static final WB_GeometryFactory gf = WB_GeometryFactory.instance();
     public static final GeometryFactory JTSgf = new GeometryFactory();
 
+    public static final WB_Point ZERO = new WB_Point(0, 0, 0);
+
     public static Coordinate toCoordinate(WB_Vector v) {
         return new Coordinate(v.xd(), v.yf(), v.zf());
     }
@@ -56,11 +58,11 @@ public class PolyHandler {
      * get shell points of WB_Polygon in AntiClockWise
      *
      * @param poly WB_Polygon
-     * @return WB_Coord[]
+     * @return WB_Point[]
      */
-    public static WB_Coord[] getShellPts(WB_Polygon poly) {
+    public static WB_Point[] getShellPts(WB_Polygon poly) {
         if (poly.getNumberOfContours() == 1)
-            return poly.getPoints().toArray();
+            return (WB_Point[]) poly.getPoints().toArray();
         int numOut = poly.getNumberOfShellPoints();
         WB_Point[] out = new WB_Point[numOut];
         for (int i = 0; i < numOut; i++) {
@@ -101,14 +103,14 @@ public class PolyHandler {
      * @return WB_Polygon
      */
     public static WB_Polygon createWB_PolyWithHole(WB_Polygon out, WB_Polygon... in) {
-        WB_Coord[] outPts = getShellPts(out);
-        WB_Coord[][] ptsIn = new WB_Point[in.length][];
+        WB_Point[] outPts = getShellPts(out);
+        WB_Point[][] ptsIn = new WB_Point[in.length][];
 
         for (int i = 0; i < in.length; i++) {
             List<WB_Coord> pts = in[i].getPoints().toList();
             ptsIn[i] = new WB_Point[pts.size()];
             for (int j = 0; j < pts.size(); j++) {
-                ptsIn[i][j] = pts.get(pts.size() - 1 - j);
+                ptsIn[i][j] = (WB_Point) pts.get(pts.size() - 1 - j);
             }
         }
         return new WB_Polygon(outPts, ptsIn);
@@ -118,10 +120,10 @@ public class PolyHandler {
      * reverse the order of points in an array
      *
      * @param pts origin points
-     * @return WB_Coord[]
+     * @return WB_Point[]
      */
-    public static WB_Coord[] reversePts(WB_Coord[] pts) {
-        WB_Coord[] newPts = new WB_Coord[pts.length];
+    public static WB_Point[] reversePts(WB_Point[] pts) {
+        WB_Point[] newPts = new WB_Point[pts.length];
         for (int i = 0; i < pts.length; i++) {
             newPts[i] = pts[pts.length - 1 - i];
         }
@@ -133,26 +135,26 @@ public class PolyHandler {
     }
 
     /**
-     * create a JTS Polygon from WB_Coord[]
+     * create a JTS Polygon from WB_Point[]
      *
-     * @param coords points of a polygon
+     * @param points points of a polygon
      * @return JTS Polygon
      */
-    public static Polygon createPolygon(WB_Coord... coords) {
-        Coordinate[] polyCoords = new Coordinate[coords.length + 1];
-        for (int i = 0; i < coords.length; i++) {
-            polyCoords[i] = new Coordinate(coords[i].xd(),
-                    coords[i].yd(), coords[i].zd());
+    public static Polygon createPolygon(WB_Point... points) {
+        Coordinate[] polyCoords = new Coordinate[points.length + 1];
+        for (int i = 0; i < points.length; i++) {
+            polyCoords[i] = new Coordinate(points[i].xd(),
+                    points[i].yd(), points[i].zd());
         }
-        polyCoords[coords.length] = polyCoords[0];
+        polyCoords[points.length] = polyCoords[0];
         return JTSgf.createPolygon(polyCoords);
     }
 
-    public static Coordinate[] createLinearRingCoordinates(WB_Coord[] coords) {
-        Coordinate[] coordinates = new Coordinate[coords.length + 1];
-        for (int i = 0; i < coords.length; i++) {
-            coordinates[i] = new Coordinate(coords[i].xd(),
-                    coords[i].yd(), coords[i].zd());
+    public static Coordinate[] createLinearRingCoordinates(WB_Coord[] points) {
+        Coordinate[] coordinates = new Coordinate[points.length + 1];
+        for (int i = 0; i < points.length; i++) {
+            coordinates[i] = new Coordinate(points[i].xd(),
+                    points[i].yd(), points[i].zd());
         }
         coordinates[coordinates.length - 1] = coordinates[0];
         return coordinates;
@@ -247,8 +249,8 @@ public class PolyHandler {
      * @return WB_Polygon
      */
     public WB_Polygon polyDup(WB_Polygon poly) {
-        WB_Coord[] out = getShellPts(poly);
-        WB_Coord[][] in = getInnerPts(poly);
+        WB_Point[] out = getShellPts(poly);
+        WB_Point[][] in = getInnerPts(poly);
         return new WB_Polygon(out, in);
     }
 
@@ -305,7 +307,7 @@ public class PolyHandler {
     }
 
     public static WB_Polygon applyToSimple(WB_Polygon poly, WB_Transform3D T) {
-        WB_Coord[] pts = applyToPts(poly.getPoints().toArray(), T);
+        WB_Point[] pts = applyToPts((WB_Point[]) poly.getPoints().toArray(), T);
         return new WB_Polygon(pts);
     }
 
@@ -319,12 +321,12 @@ public class PolyHandler {
     public static WB_Polygon apply(WB_Polygon poly, WB_Transform3D T) {
         if (poly.getNumberOfContours() == 1)
             return applyToSimple(poly, T);
-        WB_Coord[] out = applyToPts(getShellPts(poly), T);
-        WB_Coord[][] in = applyToPts(getInnerPts(poly), T);
+        WB_Point[] out = applyToPts(getShellPts(poly), T);
+        WB_Point[][] in = applyToPts(getInnerPts(poly), T);
         return new WB_Polygon(out, in);
     }
 
-    public static WB_Coord[] applyToPts(List<WB_Coord> pts, WB_Transform3D T) {
+    public static WB_Point[] applyToPts(List<WB_Point> pts, WB_Transform3D T) {
         WB_Point[] ptsT = new WB_Point[pts.size()];
         for (int i = 0; i < pts.size(); i++) {
             ptsT[i] = new WB_Point(pts.get(i)).apply(T);
@@ -332,12 +334,12 @@ public class PolyHandler {
         return ptsT;
     }
 
-    public static WB_Coord[] applyToPts(WB_Coord[] pts, WB_Transform3D T) {
+    public static WB_Point[] applyToPts(WB_Point[] pts, WB_Transform3D T) {
         return applyToPts(Arrays.asList(pts), T);
     }
 
-    public static WB_Coord[][] applyToPts(WB_Coord[][] pts, WB_Transform3D T) {
-        WB_Coord[][] ptsT = new WB_Point[pts.length][];
+    public static WB_Point[][] applyToPts(WB_Point[][] pts, WB_Transform3D T) {
+        WB_Point[][] ptsT = new WB_Point[pts.length][];
         for (int i = 0; i < pts.length; i++) {
             ptsT[i] = applyToPts(pts[i], T);
         }

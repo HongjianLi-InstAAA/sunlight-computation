@@ -9,7 +9,7 @@ import processing.core.PApplet;
 import utility.CtrlPanel;
 import utility.JtsRender;
 import utility.PolyHandler;
-import wblut.geom.WB_Vector;
+import wblut.geom.WB_Point;
 import wblut.processing.WB_Render;
 
 /**
@@ -30,7 +30,6 @@ public class ShadowTest extends PApplet {
 
     Sun sun;
     CtrlPanel panel;
-    WB_Vector panelLoc = new WB_Vector(180, 115);
 
     int[] location, date, time;
 
@@ -48,25 +47,25 @@ public class ShadowTest extends PApplet {
         render = new WB_Render(this);
         jtsRender = new JtsRender(this);
 
-        panel = new CtrlPanel(panelLoc);
+        panel = new CtrlPanel();
         sun = new Sun();
 
         location = sun.getLocation();
         date = sun.getDate();
         time = sun.getTime();
 
-        WB_Vector[] shell = new WB_Vector[]{
-                new WB_Vector(-50, -50),
-                new WB_Vector(50, -50),
-                new WB_Vector(50, 20),
-                new WB_Vector(0, 20),
-                new WB_Vector(0, 50),
-                new WB_Vector(-50, 50)};
-        WB_Vector[] hole = new WB_Vector[]{
-                new WB_Vector(-20, 0),
-                new WB_Vector(10, 0),
-                new WB_Vector(10, -30),
-                new WB_Vector(-20, -30)};
+        WB_Point[] shell = new WB_Point[]{
+                new WB_Point(-50, -50),
+                new WB_Point(50, -50),
+                new WB_Point(50, 20),
+                new WB_Point(0, 20),
+                new WB_Point(0, 50),
+                new WB_Point(-50, 50)};
+        WB_Point[] hole = new WB_Point[]{
+                new WB_Point(-20, 0),
+                new WB_Point(10, 0),
+                new WB_Point(10, -30),
+                new WB_Point(-20, -30)};
         building = new Building(PolyHandler.gf.createPolygonWithHole(
                 PolyHandler.reversePts(shell), PolyHandler.reversePts(hole)),
                 buildingHeight);
@@ -96,7 +95,7 @@ public class ShadowTest extends PApplet {
             fill(255);
         stroke(0);
         strokeWeight(1);
-        building.display(render);
+        building.display(sun, render);
         popStyle();
     }
 

@@ -4,7 +4,6 @@ import core.Sun;
 import gzf.gui.CameraController;
 import processing.core.PApplet;
 import utility.CtrlPanel;
-import wblut.geom.WB_Vector;
 import wblut.processing.WB_Render;
 
 /**
@@ -24,7 +23,6 @@ public class InteractiveSunTest extends PApplet {
 
     Sun sun;
     CtrlPanel panel;
-    WB_Vector panelLoc = new WB_Vector(180, 115);
 
     int[] location, date, time;
 
@@ -37,7 +35,7 @@ public class InteractiveSunTest extends PApplet {
         cam = new CameraController(this, Sun.groundRadius * 2);
         render = new WB_Render(this);
 
-        panel = new CtrlPanel(panelLoc);
+        panel = new CtrlPanel();
         sun = new Sun();
         sun.setPathDiv(50);
 

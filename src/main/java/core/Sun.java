@@ -3,8 +3,8 @@ package core;
 import processing.core.PGraphics;
 import utility.PolyHandler;
 import wblut.geom.WB_Circle;
+import wblut.geom.WB_Point;
 import wblut.geom.WB_PolyLine;
-import wblut.geom.WB_Vector;
 import wblut.processing.WB_Render;
 
 import java.util.ArrayList;
@@ -214,7 +214,7 @@ public class Sun {
     private double sunlightDuration;
 
     private final WB_Circle ground;
-    private WB_Vector pos;
+    private WB_Point pos;
     private int pathDiv = 30;
     private WB_PolyLine path;
     private double[] pathElevation;
@@ -228,7 +228,7 @@ public class Sun {
         setDate(summerSolstice[0], summerSolstice[1]);
         setTime(noon[0], noon[1]);
         calSunPath();
-        ground = PolyHandler.gf.createCircleWithRadius(WB_Vector.ZERO(), groundRadius);
+        ground = PolyHandler.gf.createCircleWithRadius(WB_Point.ZERO(), groundRadius);
     }
 
     public void setLocalPosition(double lon, double lat) {
@@ -256,7 +256,7 @@ public class Sun {
 
         alpha = calElevation();
         azimuth = calAzimuth();
-        pos = new WB_Vector(
+        pos = new WB_Point(
                 Math.cos(alpha) * Math.sin(azimuth),
                 Math.cos(alpha) * Math.cos(azimuth),
                 Math.sin(alpha))
@@ -305,7 +305,7 @@ public class Sun {
         return sunlightDuration;
     }
 
-    public WB_Vector getPosition() {
+    public WB_Point getPosition() {
         return pos;
     }
 
@@ -329,8 +329,8 @@ public class Sun {
         System.out.printf("Declination\t%.2f°\n", delta);
 
 //        System.out.printf("Hour Angle\t%.2f°\n", calHRA());
-        System.out.printf("Elevation\t%.2f°\n", Math.toDegrees(alpha));
-        System.out.printf("Azimuth\t%.2f°\n", Math.toDegrees(azimuth));
+        System.out.printf("Elevation\t%.2f°\tAzimuth\t%.2f°\n",
+                Math.toDegrees(alpha), Math.toDegrees(azimuth));
 
         double[] sunriseSunset = calSunriseSunset();
         String[] sunrise = hours2hhmmStr(sunriseSunset[0]);
@@ -489,7 +489,7 @@ public class Sun {
     public void calSunPath() {
         double[] sunriseSunset = calSunriseSunset();
         double curTime = localTime;
-        List<WB_Vector> pathPoints = new ArrayList<>();
+        List<WB_Point> pathPoints = new ArrayList<>();
         pathElevation = new double[pathDiv];
         double step = (sunriseSunset[1] - sunriseSunset[0])/*24.*/ / (pathDiv - 1);
 

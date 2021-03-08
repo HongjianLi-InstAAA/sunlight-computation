@@ -11,7 +11,7 @@ import processing.core.PApplet;
 import utility.CtrlPanel;
 import utility.JtsRender;
 import utility.PolyHandler;
-import wblut.geom.WB_Vector;
+import wblut.geom.WB_Point;
 import wblut.processing.WB_Render;
 
 import java.util.ArrayList;
@@ -35,16 +35,15 @@ public class GridAnalysisTest extends PApplet {
 
     Sun sun;
     CtrlPanel panel;
-    WB_Vector panelLoc = new WB_Vector(180, 115);
-
     int[] location, date, time;
 
     Building[] buildings;
     int buildingHeight = 30;
 
     Geometry shadow;
-    WB_Vector sample = new WB_Vector(40, 30);
+    WB_Point sample;
     DurationAnalysis analysis;
+    int gridSubdiv = 100;
 
     boolean ifShowShadow, ifShowAllDayShadow, ifShowGrid;
     boolean alt;
@@ -58,7 +57,7 @@ public class GridAnalysisTest extends PApplet {
         render = new WB_Render(this);
         jtsRender = new JtsRender(this);
 
-        panel = new CtrlPanel(panelLoc);
+        panel = new CtrlPanel();
         sun = new Sun();
         sun.setPathDiv(30);
 
@@ -66,29 +65,29 @@ public class GridAnalysisTest extends PApplet {
         date = sun.getDate();
         time = sun.getTime();
 
-        WB_Vector[] shell = new WB_Vector[]{
-                new WB_Vector(-50, -50),
-                new WB_Vector(50, -50),
-                new WB_Vector(50, 20),
-                new WB_Vector(0, 20),
-                new WB_Vector(0, 50),
-                new WB_Vector(-50, 50)
+        WB_Point[] shell = new WB_Point[]{
+                new WB_Point(-50, -50),
+                new WB_Point(50, -50),
+                new WB_Point(50, 20),
+                new WB_Point(0, 20),
+                new WB_Point(0, 50),
+                new WB_Point(-50, 50)
         };
-        WB_Vector[] hole = new WB_Vector[]{
-                new WB_Vector(-20, 0),
-                new WB_Vector(10, 0),
-                new WB_Vector(10, -30),
-                new WB_Vector(-20, -30)
+        WB_Point[] hole = new WB_Point[]{
+                new WB_Point(-20, 0),
+                new WB_Point(10, 0),
+                new WB_Point(10, -30),
+                new WB_Point(-20, -30)
         };
-        WB_Vector[] poly2 = new WB_Vector[]{
-                new WB_Vector(80, 40),
-                new WB_Vector(120, 50),
-                new WB_Vector(120, 70),
-                new WB_Vector(180, 70),
-                new WB_Vector(180, 150),
-                new WB_Vector(140, 150),
-                new WB_Vector(140, 120),
-                new WB_Vector(80, 120)
+        WB_Point[] poly2 = new WB_Point[]{
+                new WB_Point(80, 40),
+                new WB_Point(120, 50),
+                new WB_Point(120, 70),
+                new WB_Point(180, 70),
+                new WB_Point(180, 150),
+                new WB_Point(140, 150),
+                new WB_Point(140, 120),
+                new WB_Point(80, 120)
         };
         Building building0 = new Building(
                 PolyHandler.gf.createPolygonWithHole(
@@ -107,6 +106,7 @@ public class GridAnalysisTest extends PApplet {
         buildingList.toArray(buildings);
 
         analysis = new DurationAnalysis(sun, buildings);
+        sample = PolyHandler.ZERO;
         update();
         updateGrid();
 
@@ -132,37 +132,20 @@ public class GridAnalysisTest extends PApplet {
             }
         }
 
-        pushStyle();
-        // draw shadows
-        fill(0x300000ff);
-        noStroke();
-        if (ifShowShadow) {
-            if (null != shadow)
-                jtsRender.draw(shadow);
-        }
-
-        if (ifShowAllDayShadow) {
-            fill(0x10000000);
-            analysis.displayAllDayShadow(jtsRender);
-        }
-
         // draw buildings
-        if (sun.getPosition().zd() <= 0)
-            fill(150);
-        else
-            fill(255);
-        stroke(0);
-        strokeWeight(1);
-        for (Building building : buildings) {
-            building.display(render);
-        }
+        for (Building building : buildings)
+            building.display(sun, render);
+
+        // draw shadows
+        if (ifShowShadow)
+            Shadow.displayShadow(shadow, jtsRender);
+        // draw all day shadow
+        if (ifShowAllDayShadow)
+            analysis.displayAllDayShadow(jtsRender);
 
         // draw samples
-        stroke(0, 255, 0);
-        strokeWeight(10);
         analysis.displaySample(this);
-        popStyle();
-
+        // draw grid
         if (ifShowGrid)
             analysis.displayGrid(this);
     }
@@ -175,9 +158,9 @@ public class GridAnalysisTest extends PApplet {
 
     private void updateGrid() {
         analysis.gridAnalysis(
-                new WB_Vector(-Sun.groundRadius, -Sun.groundRadius),
-                new WB_Vector(Sun.groundRadius, Sun.groundRadius),
-                100, 100
+                new WB_Point(-Sun.groundRadius, -Sun.groundRadius),
+                new WB_Point(Sun.groundRadius, Sun.groundRadius),
+                gridSubdiv, gridSubdiv
         );
     }
 

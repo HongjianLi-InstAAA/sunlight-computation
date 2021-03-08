@@ -1,5 +1,6 @@
 package core;
 
+import processing.core.PGraphics;
 import utility.PolyAnalysis;
 import wblut.geom.WB_Polygon;
 import wblut.hemesh.HEC_Polygon;
@@ -23,9 +24,9 @@ public class Building {
 
     private final List<PolyAnalysis> pas;
 
-    public Building(WB_Polygon base, double height){
-        this.base=base;
-        this.height=height;
+    public Building(WB_Polygon base, double height) {
+        this.base = base;
+        this.height = height;
         HEC_Polygon creator = new HEC_Polygon(base, height);
         HE_Mesh mesh = new HE_Mesh(creator);
         pas = new ArrayList<>();
@@ -42,8 +43,17 @@ public class Building {
         return height;
     }
 
-    public void display(WB_Render render){
-        for(PolyAnalysis p:pas)
+    public void display(Sun sun, WB_Render render) {
+        PGraphics app = render.getHome();
+        app.pushStyle();
+        if (sun.getPosition().zd() <= 0)
+            app.fill(150);
+        else
+            app.fill(255);
+        app.stroke(0);
+        app.strokeWeight(1);
+        for (PolyAnalysis p : pas)
             p.draw(render);
+        app.popStyle();
     }
 }

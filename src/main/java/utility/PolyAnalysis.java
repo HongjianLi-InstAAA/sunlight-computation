@@ -8,7 +8,6 @@ import wblut.processing.WB_Render3D;
 
 /**
  * display WB_Polygon with its normal
- *
  */
 
 public class PolyAnalysis {

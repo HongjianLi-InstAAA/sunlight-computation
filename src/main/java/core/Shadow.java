@@ -3,11 +3,13 @@ package core;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.LinearRing;
+import processing.core.PApplet;
+import utility.JtsRender;
 import utility.PolyHandler;
 import wblut.geom.WB_Coord;
+import wblut.geom.WB_Point;
 import wblut.geom.WB_PolyLine;
 import wblut.geom.WB_Polygon;
-import wblut.geom.WB_Vector;
 
 /**
  * shadow calculator for the sun at a given position
@@ -67,9 +69,9 @@ public class Shadow {
      * @param height building height in METERS
      * @return WB_Vector
      */
-    private static WB_Vector calShadowVector(WB_Vector pos, double alpha, double height) {
+    private static WB_Point calShadowVector(WB_Point pos, double alpha, double height) {
         double shadowLength = height / Math.tan(alpha);
-        WB_Vector shadowVec = pos.mul(-1);
+        WB_Point shadowVec = pos.mul(-1);
 
         shadowVec.setZ(0);
         shadowVec.normalizeSelf();
@@ -108,18 +110,18 @@ public class Shadow {
      * @param endID    index of the ending points
      * @return Geometry
      */
-    private static Geometry calEdgeShadow(WB_Vector pos, double alpha, Building building, int startID, int endID) {
-        WB_Vector shadowVec = calShadowVector(pos, alpha, building.getHeight());
+    private static Geometry calEdgeShadow(WB_Point pos, double alpha, Building building, int startID, int endID) {
+        WB_Point shadowVec = calShadowVector(pos, alpha, building.getHeight());
         Geometry[] geos = new Geometry[endID - startID + 1];
 
-        WB_Coord[] coords = building.getBase().getPoints().toArray();
+        WB_Coord[] points = building.getBase().getPoints().toArray();
         int edgeNums = endID - startID + 1;
 
         for (int i = startID; i < endID + 1; i++) {
-            WB_Coord p0 = coords[i];
-            WB_Coord p1 = coords[(i - startID + 1) % edgeNums + startID];
-            WB_Coord p2 = WB_Vector.add(p1, shadowVec);
-            WB_Coord p3 = WB_Vector.add(p0, shadowVec);
+            WB_Point p0 = (WB_Point) points[i];
+            WB_Point p1 = (WB_Point) points[(i - startID + 1) % edgeNums + startID];
+            WB_Point p2 = p1.add(shadowVec);
+            WB_Point p3 = p0.add(shadowVec);
 
             geos[i - startID] = PolyHandler.createPolygon(p0, p1, p2, p3);
         }
@@ -135,11 +137,11 @@ public class Shadow {
      * @param building simple building
      * @return Geometry
      */
-    private static Geometry calShadow(WB_Vector pos, double alpha, Building building) {
+    private static Geometry calShadow(WB_Point pos, double alpha, Building building) {
         if (pos.zd() <= 0)
             return null;
         WB_Polygon base = building.getBase();
-        WB_Coord[] coords = base.getPoints().toArray();
+        WB_Coord[] points = base.getPoints().toArray();
         int[] ptsPerContour = base.getNumberOfPointsPerContour();
         Geometry[] shadows = new Geometry[ptsPerContour.length + 1];
 
@@ -154,18 +156,18 @@ public class Shadow {
             shadows[i] = calEdgeShadow(pos, alpha, building, startID, endID);
 
             if (i > 0) {
-                WB_Coord[] holeCoords = new WB_Coord[ptsPerContour[i]];
-                System.arraycopy(coords, startID, holeCoords, 0, holeCoords.length);
+                WB_Coord[] holePoints = new WB_Point[ptsPerContour[i]];
+                System.arraycopy(points, startID, holePoints, 0, holePoints.length);
                 holes[i - 1] = PolyHandler.JTSgf.createLinearRing(
-                        PolyHandler.createLinearRingCoordinates(holeCoords));
+                        PolyHandler.createLinearRingCoordinates(holePoints));
             }
         }
 
         // shell LinearRing
-        WB_Coord[] shellCoords = new WB_Coord[ptsPerContour[0]];
-        System.arraycopy(coords, 0, shellCoords, 0, shellCoords.length);
+        WB_Coord[] shellPoints = new WB_Point[ptsPerContour[0]];
+        System.arraycopy(points, 0, shellPoints, 0, shellPoints.length);
         LinearRing shell = PolyHandler.JTSgf.createLinearRing(
-                PolyHandler.createLinearRingCoordinates(shellCoords));
+                PolyHandler.createLinearRingCoordinates(shellPoints));
 
         // building base to union with edge shadows
         if (ptsPerContour.length > 1)
@@ -185,5 +187,16 @@ public class Shadow {
         }
         GeometryCollection gc = PolyHandler.JTSgf.createGeometryCollection(geos);
         return gc.buffer(0);
+    }
+
+    public static void displayShadow(Geometry shadow, JtsRender jtsRender) {
+        if (null == shadow)
+            return;
+        PApplet app = jtsRender.getApp();
+        app.pushStyle();
+        app.fill(0x300000ff);
+        app.noStroke();
+        jtsRender.draw(shadow);
+        app.popStyle();
     }
 }

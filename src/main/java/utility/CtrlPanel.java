@@ -3,7 +3,7 @@ package utility;
 import core.Sun;
 import controlP5.*;
 import processing.core.PApplet;
-import wblut.geom.WB_Vector;
+import wblut.geom.WB_Point;
 
 
 /**
@@ -15,9 +15,9 @@ import wblut.geom.WB_Vector;
  */
 
 public class CtrlPanel extends PApplet {
-
-    private static final int bgColor = 120;
-    private static final int lineSpacing = 13;
+    private static final WB_Point INIT_POSITION = new WB_Point(180, 115);
+    private static final int BG_COLOR = 120;
+    private static final int LINE_SPACING = 13;
 
     private static boolean isUpdate(int[] a, int[] b) {
         if (null != a && null != b) {
@@ -36,7 +36,11 @@ public class CtrlPanel extends PApplet {
 
     private ControlP5 cp5;
 
-    public CtrlPanel(WB_Vector loc) {
+    public CtrlPanel() {
+        this(INIT_POSITION);
+    }
+
+    public CtrlPanel(WB_Point loc) {
         super();
         PApplet.runSketch(new String[]{"Panel"}, this);
         surface.setLocation(Math.round(loc.xf()), Math.round(loc.yf()));
@@ -126,17 +130,17 @@ public class CtrlPanel extends PApplet {
         ;
         cp5.addTextlabel("instruction1")
                 .setText("shadow : S")
-                .setPosition(leftMargin, topMargin + 370 + lineSpacing)
+                .setPosition(leftMargin, topMargin + 370 + LINE_SPACING)
                 .setColorValue(0xffffffff)
         ;
         cp5.addTextlabel("instruction2")
                 .setText("all day shadow : A")
-                .setPosition(leftMargin, topMargin + 370 + lineSpacing * 2)
+                .setPosition(leftMargin, topMargin + 370 + LINE_SPACING * 2)
                 .setColorValue(0xffffffff)
         ;
         cp5.addTextlabel("instruction3")
                 .setText("grid analysis : G")
-                .setPosition(leftMargin, topMargin + 370 + lineSpacing * 3)
+                .setPosition(leftMargin, topMargin + 370 + LINE_SPACING * 3)
                 .setColorValue(0xffffffff)
         ;
 
@@ -145,7 +149,7 @@ public class CtrlPanel extends PApplet {
 
     public void draw() {
 //            System.out.println("inner draw-----------------------------");
-        background(bgColor);
+        background(BG_COLOR);
     }
 
     public int[] getLonLat() {

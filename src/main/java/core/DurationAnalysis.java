@@ -6,8 +6,8 @@ import processing.core.PConstants;
 import utility.JtsRender;
 import utility.PolyHandler;
 import wblut.geom.WB_GeometryOp;
+import wblut.geom.WB_Point;
 import wblut.geom.WB_Triangle;
-import wblut.geom.WB_Vector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,16 +23,16 @@ import java.util.concurrent.TimeUnit;
  */
 
 public class DurationAnalysis {
-    private static final int THREAD_COUNT = 100;
+    private static final int THREAD_COUNT = 25;
 
     private final Sun sun;
     private final Building[] buildings;
     private Geometry[] allDayShadow;
     private List<ArrayList<WB_Triangle>> allDayShadowTris;
 
-    private WB_Vector sample;
+    private WB_Point sample;
     private double duration; // in HOURS
-    private WB_Vector[][] samples;
+    private WB_Point[][] samples;
     private double[][] durations;
     private float gridWidth, gridHeight;
 
@@ -53,14 +53,16 @@ public class DurationAnalysis {
         }
     }
 
-    public void pointAnalysis(WB_Vector point) {
+    public void pointAnalysis(WB_Point point) {
+        if (null == point)
+            return;
         sample = point;
         duration = calDuration(point);
     }
 
-    public void gridAnalysis(WB_Vector leftBottom, WB_Vector rightTop,
+    public void gridAnalysis(WB_Point leftBottom, WB_Point rightTop,
                              int row, int col) {
-        samples = new WB_Vector[row][col];
+        samples = new WB_Point[row][col];
         durations = new double[row][col];
 
         gridWidth = (float) ((rightTop.xd() - leftBottom.xd()) / col);
@@ -74,7 +76,7 @@ public class DurationAnalysis {
                 int finalI = i;
                 int finalJ = j;
                 fixedThreadPool.execute(() -> {
-                    samples[finalI][finalJ] = new WB_Vector(
+                    samples[finalI][finalJ] = new WB_Point(
                             leftBottom.xd() + (finalJ + 0.5) * gridWidth,
                             leftBottom.yd() + (finalI + 0.5) * gridHeight);
                     durations[finalI][finalJ] = calDuration(samples[finalI][finalJ]);
@@ -92,10 +94,10 @@ public class DurationAnalysis {
             e.printStackTrace();
         }
         long endTime = System.currentTimeMillis();
-        System.out.printf("总耗时：%.2fs%n", (endTime - startTime) / 1e3);
+        System.out.printf("TOTAL TIME: %.2fs%n", (endTime - startTime) / 1e3);
     }
 
-    private double calDuration(WB_Vector point) {
+    private double calDuration(WB_Point point) {
         if (null == allDayShadow)
             return 0;
 
@@ -109,13 +111,42 @@ public class DurationAnalysis {
     }
 
     public void displayAllDayShadow(JtsRender jtsRender) {
+        if (null == allDayShadow)
+            return;
+        PApplet app = jtsRender.getApp();
+        app.pushStyle();
+        app.noStroke();
+        app.fill(0x22000000);
         for (Geometry g : allDayShadow)
             jtsRender.draw(g);
+        app.popStyle();
     }
 
     public void displaySample(PApplet app) {
-        app.point(sample.xf(), sample.yf());
+        if (null == sample)
+            return;
+        app.pushStyle();
+        app.stroke(0x88666666);
+        app.strokeWeight(10);
+        app.point(sample.xf(), sample.yf(), 2);
         displayDuration(app, sample, duration);
+        app.popStyle();
+    }
+
+    private void displayDuration(PApplet app, WB_Point v, double d) {
+        app.pushMatrix();
+        app.translate(v.xf(), v.yf());
+        app.scale(1, -1, 1);
+        app.pushStyle();
+
+        app.textMode(PConstants.SHAPE);
+        app.textAlign(PConstants.CENTER, PConstants.CENTER);
+        app.textSize(10);
+        app.fill(0);
+        app.text(String.format("%.2f", d), 0, 0, 1);
+
+        app.popStyle();
+        app.popMatrix();
     }
 
     public void displayGrid(PApplet app) {
@@ -148,21 +179,5 @@ public class DurationAnalysis {
             }
         }
         app.popStyle();
-    }
-
-    private void displayDuration(PApplet app, WB_Vector v, double d) {
-        app.pushMatrix();
-        app.translate(v.xf(), v.yf());
-        app.scale(1, -1, 1);
-        app.pushStyle();
-
-        app.textMode(PConstants.SHAPE);
-        app.textAlign(PConstants.CENTER, PConstants.CENTER);
-        app.textSize(5);
-        app.fill(0);
-        app.text(String.format("%.2f", d), 0, 0, 1);
-
-        app.popStyle();
-        app.popMatrix();
     }
 }
