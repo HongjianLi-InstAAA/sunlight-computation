@@ -1,5 +1,3 @@
-package test;
-
 import core.Building;
 import core.DurationAnalysis;
 import core.Shadow;
@@ -18,15 +16,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * facet shadow test
+ * grid analysis of sunlight hours test
  *
  * @author Wu
- * @create 2021-03-08 16:47
+ * @create 2021-02-27 9:55
  */
 
-public class FacetTest extends PApplet {
+public class GridAnalysisTest extends PApplet {
     public static void main(String[] args) {
-        PApplet.main("test.FacetTest");
+        PApplet.main("GridAnalysisTest");
     }
 
     CameraController cam;
@@ -41,7 +39,7 @@ public class FacetTest extends PApplet {
     Building[] buildings;
     int buildingHeight = 30;
 
-    Shadow.Type type = Shadow.Type.FACET;
+    Shadow.Type type = Shadow.Type.VOLUME;
     Geometry shadow;
     WB_Point sample;
     DurationAnalysis analysis;
@@ -130,7 +128,8 @@ public class FacetTest extends PApplet {
             update();
             if (state == CtrlPanel.updateState.UPDATE_PATH) {
                 analysis.update();
-                updateGrid();
+                if (ifShowGrid)
+                    updateGrid();
             }
         }
 

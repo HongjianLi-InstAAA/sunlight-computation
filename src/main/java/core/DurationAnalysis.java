@@ -39,7 +39,7 @@ public class DurationAnalysis {
     private float gridWidth, gridHeight;
 
     public DurationAnalysis(Sun sun, Building... buildings) {
-        this(Shadow.Type.VOLUME, sun, buildings);
+        this(Shadow.Type.FACET, sun, buildings);
     }
 
     public DurationAnalysis(Shadow.Type type, Sun sun, Building... buildings) {
@@ -54,10 +54,9 @@ public class DurationAnalysis {
         if (null == allDayShadow)
             return;
         allDayShadowTris = new ArrayList<>();
-        for (Geometry g : allDayShadow) {
+        for (Geometry g : allDayShadow)
             if (null != g)
                 allDayShadowTris.add(PolyHandler.toWB_Triangles(g));
-        }
     }
 
     public void pointAnalysis(WB_Point point) {

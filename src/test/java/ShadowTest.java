@@ -1,5 +1,3 @@
-package test;
-
 import core.Building;
 import core.Shadow;
 import core.Sun;
@@ -21,7 +19,7 @@ import wblut.processing.WB_Render;
 
 public class ShadowTest extends PApplet {
     public static void main(String[] args) {
-        PApplet.main("test.ShadowTest");
+        PApplet.main("ShadowTest");
     }
 
     CameraController cam;

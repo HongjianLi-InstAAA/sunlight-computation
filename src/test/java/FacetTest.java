@@ -1,5 +1,3 @@
-package test;
-
 import core.Building;
 import core.DurationAnalysis;
 import core.Shadow;
@@ -18,15 +16,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * grid analysis of sunlight hours test
+ * facet shadow test
  *
  * @author Wu
- * @create 2021-02-27 9:55
+ * @create 2021-03-08 16:47
  */
 
-public class GridAnalysisTest extends PApplet {
+public class FacetTest extends PApplet {
     public static void main(String[] args) {
-        PApplet.main("test.GridAnalysisTest");
+        PApplet.main("FacetTest");
     }
 
     CameraController cam;
@@ -39,9 +37,8 @@ public class GridAnalysisTest extends PApplet {
     int pathDiv = 50;
 
     Building[] buildings;
-    int buildingHeight = 30;
 
-    Shadow.Type type = Shadow.Type.VOLUME;
+    Shadow.Type type = Shadow.Type.FACET;
     Geometry shadow;
     WB_Point sample;
     DurationAnalysis analysis;
@@ -67,42 +64,10 @@ public class GridAnalysisTest extends PApplet {
         date = sun.getDate();
         time = sun.getTime();
 
-        WB_Point[] shell = new WB_Point[]{
-                new WB_Point(-50, -50),
-                new WB_Point(50, -50),
-                new WB_Point(50, 20),
-                new WB_Point(0, 20),
-                new WB_Point(0, 50),
-                new WB_Point(-50, 50)
-        };
-        WB_Point[] hole = new WB_Point[]{
-                new WB_Point(-20, 0),
-                new WB_Point(10, 0),
-                new WB_Point(10, -30),
-                new WB_Point(-20, -30)
-        };
-        WB_Point[] poly2 = new WB_Point[]{
-                new WB_Point(80, 40),
-                new WB_Point(120, 50),
-                new WB_Point(120, 70),
-                new WB_Point(180, 70),
-                new WB_Point(180, 150),
-                new WB_Point(140, 150),
-                new WB_Point(140, 120),
-                new WB_Point(80, 120)
-        };
-        Building building0 = new Building(
-                PolyHandler.gf.createPolygonWithHole(
-                        PolyHandler.reversePts(shell),
-                        PolyHandler.reversePts(hole)),
-                buildingHeight);
-        Building building1 = new Building(
-                PolyHandler.gf.createSimplePolygon(
-                        PolyHandler.reversePts(poly2)),
-                buildingHeight * 2);
+        String objPath = "src\\test\\resources\\buildings.obj";
+        Building building = new Building(PolyHandler.obj2tris(objPath));
         List<Building> buildingList = new ArrayList<>();
-        buildingList.add(building0);
-        buildingList.add(building1);
+        buildingList.add(building);
 
         buildings = new Building[buildingList.size()];
         buildingList.toArray(buildings);
@@ -130,7 +95,8 @@ public class GridAnalysisTest extends PApplet {
             update();
             if (state == CtrlPanel.updateState.UPDATE_PATH) {
                 analysis.update();
-                updateGrid();
+                if (ifShowGrid)
+                    updateGrid();
             }
         }
 

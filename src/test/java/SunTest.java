@@ -1,5 +1,3 @@
-package test;
-
 import core.Sun;
 import gzf.gui.CameraController;
 import processing.core.PApplet;
@@ -14,7 +12,7 @@ import wblut.processing.WB_Render;
 
 public class SunTest extends PApplet {
     public static void main(String[] args) {
-        PApplet.main("test.SunTest");
+        PApplet.main("SunTest");
     }
 
     CameraController cam;

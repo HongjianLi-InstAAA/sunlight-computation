@@ -2,6 +2,8 @@ package utility;
 
 import org.locationtech.jts.geom.*;
 import wblut.geom.*;
+import wblut.hemesh.HEC_FromWBMesh;
+import wblut.hemesh.HET_Import;
 import wblut.hemesh.HE_Mesh;
 
 import java.util.ArrayList;
@@ -251,17 +253,31 @@ public class PolyHandler {
         return tris;
     }
 
+    public static List<WB_Triangle> obj2tris(String path) {
+        HE_Mesh mesh = HET_Import.readFromObjFile(path);
+        WB_CoordCollection coords = mesh.getPoints();
+        int[][] faces = mesh.getFacesAsInt();
+        List<WB_Point> pts = new ArrayList<>();
+        for (int i = 0; i < coords.size(); i++) {
+            WB_Point pt = new WB_Point(coords.get(i));
+            pt = new WB_Point(pt.xd(), -pt.zd(), pt.yd());
+            pts.add(pt);
+        }
+
+        return mesh2tris(new HE_Mesh(gf.createMesh(pts, faces)));
+    }
+
     public static List<WB_Triangle> mesh2tris(HE_Mesh mesh) {
         if (null == mesh)
             return null;
         mesh.triangulate();
         List<WB_Triangle> tris = new ArrayList<>();
         int[][] triID = mesh.getFacesAsInt();
-        for (int i = 0; i < triID.length; i++) {
+        for (int[] ints : triID) {
             tris.add(gf.createTriangle(
-                    mesh.getVertex(triID[i][0]),
-                    mesh.getVertex(triID[i][1]),
-                    mesh.getVertex(triID[i][2])
+                    mesh.getVertex(ints[0]),
+                    mesh.getVertex(ints[1]),
+                    mesh.getVertex(ints[2])
             ));
         }
         return tris;

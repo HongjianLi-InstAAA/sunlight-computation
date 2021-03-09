@@ -1,5 +1,3 @@
-package test;
-
 import core.Building;
 import core.DurationAnalysis;
 import core.Shadow;
@@ -26,7 +24,7 @@ import java.util.List;
 
 public class PointAnalysisTest extends PApplet {
     public static void main(String[] args) {
-        PApplet.main("test.PointAnalysisTest");
+        PApplet.main("PointAnalysisTest");
     }
 
     CameraController cam;

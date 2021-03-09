@@ -6,6 +6,7 @@ import utility.PolyHandler;
 import wblut.geom.WB_Polygon;
 import wblut.geom.WB_Triangle;
 import wblut.hemesh.HEC_Polygon;
+import wblut.hemesh.HET_Import;
 import wblut.hemesh.HE_Face;
 import wblut.hemesh.HE_Mesh;
 import wblut.processing.WB_Render;
