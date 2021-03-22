@@ -1,8 +1,8 @@
 package utility;
 
+import Jama.Matrix;
 import org.locationtech.jts.geom.*;
 import wblut.geom.*;
-import wblut.hemesh.HEC_FromWBMesh;
 import wblut.hemesh.HET_Import;
 import wblut.hemesh.HE_Mesh;
 
@@ -274,13 +274,100 @@ public class PolyHandler {
         List<WB_Triangle> tris = new ArrayList<>();
         int[][] triID = mesh.getFacesAsInt();
         for (int[] ints : triID) {
-            tris.add(gf.createTriangle(
+            WB_Triangle tri = gf.createTriangle(
                     mesh.getVertex(ints[0]),
                     mesh.getVertex(ints[1]),
-                    mesh.getVertex(ints[2])
-            ));
+                    mesh.getVertex(ints[2]));
+            tris.add(tri);
         }
         return tris;
+    }
+
+    /**
+     * get Euler Angles of rotation from (0, 0, 1) to target normal
+     *
+     * @param origin target point
+     * @param normal normal of the target plane
+     * @return WB_Vector
+     */
+    public static WB_Vector getEuler(WB_Point origin, WB_Coord normal) {
+        WB_Vector normalVec = new WB_Vector(normal);
+        normalVec.normalizeSelf();
+
+        WB_Transform3D tran = new WB_Transform3D();
+        tran.addFromWorldToCS(new WB_CoordinateSystem(new WB_Plane(origin, normalVec)));
+        tran.applyInvAsVector(WB_Vector.Z());
+        return tran.getEulerAnglesXYZ();
+    }
+
+    /**
+     * ray-plane intersection point
+     *
+     * @param ray  ray
+     * @param plane WB_Triangle
+     * @return WB_Point intersection point
+     */
+    public static WB_Point rayPlaneIntersection(WB_Ray ray, WB_Triangle plane) {
+        WB_Point la = ray.getPoint(0);
+        WB_Point lb = ray.getPoint(1);
+
+        Matrix m = rayIntersectPlane(ray, plane);
+        if (null == m)
+            return null;
+        double t = m.get(0, 0);
+        return la.add(lb.sub(la).mul(t));
+    }
+
+    /**
+     * check if a ray intersects a triangle
+     *
+     * @param ray ray
+     * @param tri WB_Triangle
+     * @return boolean
+     */
+    public static boolean checkRayTriIntersection(WB_Ray ray, WB_Triangle tri) {
+        Matrix m = rayIntersectPlane(ray, tri);
+        if (null == m)
+            return false;
+
+        double t = m.get(0, 0);
+        double u = m.get(1, 0);
+        double v = m.get(2, 0);
+        if (t >= 0 && u + v <= 1)
+            return u >= 0 && u <= 1 && v >= 0 && v <= 1;
+        return false;
+    }
+
+    /**
+     * ray-plane intersection matrix
+     *
+     * @param ray  ray
+     * @param plane WB_Triangle
+     * @return Matrix [{t}, {u}, {v}]
+     */
+    private static Matrix rayIntersectPlane(WB_Ray ray, WB_Triangle plane) {
+        WB_Point la = ray.getPoint(0);
+        WB_Point lb = ray.getPoint(1);
+
+        WB_Coord p0 = plane.getPoint(0);
+        WB_Coord p1 = plane.getPoint(1);
+        WB_Coord p2 = plane.getPoint(2);
+        Matrix m = new Matrix(new double[][]{
+                {la.xd() - lb.xd(), p1.xd() - p0.xd(), p2.xd() - p0.xd()},
+                {la.yd() - lb.yd(), p1.yd() - p0.yd(), p2.yd() - p0.yd()},
+                {la.zd() - lb.zd(), p1.zd() - p0.zd(), p2.zd() - p0.zd()}
+        });
+        if (m.det() == 0)
+            return null;
+        m = m.inverse();
+
+        Matrix n = new Matrix(new double[][]{
+                {la.xd() - p0.xd()},
+                {la.yd() - p0.yd()},
+                {la.zd() - p0.zd()}
+        });
+
+        return m.times(n);
     }
 
     /**
@@ -289,7 +376,7 @@ public class PolyHandler {
      * @param poly WB_Polygon
      * @return WB_Polygon
      */
-    public WB_Polygon polyDup(WB_Polygon poly) {
+    public static WB_Polygon polyDup(WB_Polygon poly) {
         WB_Point[] out = getShellPts(poly);
         WB_Point[][] in = getInnerPts(poly);
         return new WB_Polygon(out, in);

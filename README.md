@@ -5,8 +5,12 @@ core primitive and calculator
 - Sun
 - Shadow
 - Building
-- GridAnalysis
+- DurationAnalysis
+### utility
+toolkit for geometric operation and rendering
+- CtrlPanel
+- JtsRender
+- PolyAnalysis
+- PolyHandler
 ### test
 test programs
-### utility
-toolkit for geometric operation

@@ -1,6 +1,5 @@
 package core;
 
-import Jama.Matrix;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.LinearRing;
@@ -154,34 +153,6 @@ public class Shadow {
         return unionShadow(geos);
     }
 
-    /**
-     * line-plane intersection
-     *
-     * @param line  line
-     * @param plane WB_Triangle
-     * @return WB_Point intersection point
-     */
-    private static WB_Point lineIntersectPlane(WB_Line line, WB_Triangle plane) {
-        WB_Point la = line.getPoint(0);
-        WB_Point lb = line.getPoint(1);
-
-        WB_Point p0 = (WB_Point) plane.getPoint(0);
-        WB_Point p1 = (WB_Point) plane.getPoint(1);
-        WB_Point p2 = (WB_Point) plane.getPoint(2);
-        Matrix m = new Matrix(new double[][]{
-                {la.xd() - lb.xd(), p1.xd() - p0.xd(), p2.xd() - p0.xd()},
-                {la.yd() - lb.yd(), p1.yd() - p0.yd(), p2.yd() - p0.yd()},
-                {la.zd() - lb.zd(), p1.zd() - p0.zd(), p2.zd() - p0.zd()}
-        }).inverse();
-        Matrix n = new Matrix(new double[][]{
-                {la.xd() - p0.xd()},
-                {la.yd() - p0.yd()},
-                {la.zd() - p0.zd()}
-        });
-
-        double t = m.times(n).get(0, 0);
-        return la.add(lb.sub(la).mul(t));
-    }
 
     /**
      * shadow of a triangular facet
@@ -195,9 +166,11 @@ public class Shadow {
         WB_Point[] shadowPoints = new WB_Point[3];
         for (int i = 0; i < shadowPoints.length; i++) {
             WB_Coord origin = tri.getPoint(i);
-            WB_Line line = PolyHandler.gf.createLineThroughPoints(
+            WB_Ray ray = PolyHandler.gf.createRayThroughPoints(
                     origin, WB_Point.add(origin, sunlight));
-            shadowPoints[i] = lineIntersectPlane(line, PolyHandler.XY_PLANE);
+            shadowPoints[i] = PolyHandler.rayPlaneIntersection(ray, PolyHandler.XY_PLANE);
+            if (null == shadowPoints[i])
+                return null;
         }
 
         return PolyHandler.createPolygon(
