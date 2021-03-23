@@ -56,8 +56,8 @@ public class Scene {
         this.analysis = analysis;
     }
 
-    public void setSamples(List<SamplingPoint> samples){
-        this.samples=samples;
+    public void setSamples(List<SamplingPoint> samples) {
+        this.samples = samples;
         analysis.pointsAnalysis(samples);
     }
 
@@ -150,7 +150,7 @@ public class Scene {
     private void update() {
         shadow = Shadow.calCurrentShadow(this);
         analysis.pointAnalysis(sample);
-        if(null!=samples)
+        if (null != samples)
             analysis.pointsAnalysis(samples);
     }
 

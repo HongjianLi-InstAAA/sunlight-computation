@@ -35,6 +35,7 @@ public class PolyHandler {
     public static WB_Coord vec2coord(Vec_Guo v) {
         return new WB_Point(v.x(), v.y(), v.z());
     }
+
     /**
      * @param coords JTS coordinates
      * @return Coordinate[]

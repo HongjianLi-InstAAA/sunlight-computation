@@ -48,8 +48,8 @@ public class Shadow {
     }
 
     public static Geometry calCurrentShadow(Scene scene) {
-        Sun sun= scene.getSun();
-        List<Building> buildings= scene.getBuildings();
+        Sun sun = scene.getSun();
+        List<Building> buildings = scene.getBuildings();
         if (sun.getPosition().zd() <= 0)
             return null;
         Geometry[] geos = new Geometry[buildings.size()];

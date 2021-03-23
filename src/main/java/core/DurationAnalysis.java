@@ -39,7 +39,7 @@ public class DurationAnalysis {
     public DurationAnalysis(Scene scene) {
         this.type = scene.getType();
         this.sun = scene.getSun();
-        buildings=new Building[scene.getBuildings().size()];
+        buildings = new Building[scene.getBuildings().size()];
         scene.getBuildings().toArray(buildings);
         scene.setAnalysis(this);
 
