@@ -25,43 +25,44 @@ public class Building {
     private final WB_Polygon base;
     private final double height;
 
-    private final List<PolyWithNormal> pns;
-    private final List<WB_Triangle> tris;
-    private List<WB_Point> triCenters;
-    private Map<WB_Point, WB_Coord> facetCenters;
+    private List<PolyWithNormal> pns;
+    private List<WB_Triangle> tris;
+    private WB_AABB aabb;
 
     public Building(WB_Polygon base, double height) {
         this.base = base;
         this.height = height;
         HEC_Polygon creator = new HEC_Polygon(base, height);
         HE_Mesh mesh = new HE_Mesh(creator);
-        pns = new ArrayList<>();
-        for (HE_Face f : mesh.getFaces()) {
-            pns.add(new PolyWithNormal(f.getPolygon()));
-        }
+        init(mesh);
 
-        tris = PolyHandler.mesh2tris(mesh);
+        pns = new ArrayList<>();
+        for (HE_Face f : mesh.getFaces())
+            pns.add(new PolyWithNormal(f.getPolygon()));
     }
 
-    public Building(List<WB_Triangle> tris) {
+    public Building(HE_Mesh mesh) {
         this.base = null;
         this.height = 0;
-        this.tris = tris;
+        init(mesh);
+
         pns = new ArrayList<>();
+        for (WB_Triangle tri : tris)
+            pns.add(new PolyWithNormal(tri));
+    }
+
+    private void init(HE_Mesh mesh) {
+        this.tris = PolyHandler.mesh2tris(mesh);
         List<WB_Coord> pts = new ArrayList<>();
         for (WB_Triangle tri : tris) {
-            pns.add(new PolyWithNormal(tri));
             pts.add(tri.getPoint(0));
             pts.add(tri.getPoint(1));
             pts.add(tri.getPoint(2));
         }
 
-        WB_AABB aabb = new WB_AABB(pts);
+        aabb = new WB_AABB(pts);
     }
 
-    public Building(HE_Mesh mesh){
-        this(PolyHandler.mesh2tris(mesh));
-    }
 
     public WB_Polygon getBase() {
         return base;
@@ -75,33 +76,22 @@ public class Building {
         return tris;
     }
 
-    public List<WB_Point> getTriCenters() {
-        if (null == tris)
-            return null;
-        triCenters = new ArrayList<>();
-        for (WB_Triangle tri : tris) {
-            WB_Plane p = tri.getPlane();
-            if (null != p)
-                triCenters.add(tri.getCenter().add(p.getNormal().mul(1)));
-        }
-        return triCenters;
-    }
-
     public Map<WB_Point, WB_Coord> getFacetCenters() {
         if (null == tris)
             return null;
-        facetCenters = new HashMap<>();
+        Map<WB_Point, WB_Coord> facetCenters = new HashMap<>();
         for (WB_Triangle tri :
                 tris) {
             WB_Plane p = tri.getPlane();
             if (null != p) {
-                facetCenters.put(
-                        tri.getCenter().add(p.getNormal().mul(1)),
-                        p.getNormal()
-                );
+                facetCenters.put(tri.getCenter(), p.getNormal());
             }
         }
         return facetCenters;
+    }
+
+    public WB_AABB getAABB() {
+        return aabb;
     }
 
     public void display(Sun sun, WB_Render render) {

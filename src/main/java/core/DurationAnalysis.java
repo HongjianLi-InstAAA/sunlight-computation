@@ -24,9 +24,9 @@ import java.util.concurrent.TimeUnit;
 public class DurationAnalysis {
     private static final int THREAD_COUNT = 25;
 
-    private final Shadow.Type type;
-    private final Sun sun;
-    private final Building[] buildings;
+    private Shadow.Type type;
+    private Sun sun;
+    private Building[] buildings;
     private Geometry[] allDayShadow;
     private List<ArrayList<WB_Triangle>> allDayShadowTris;
 
@@ -35,6 +35,17 @@ public class DurationAnalysis {
     private SamplingPoint[][] grids;
     private WB_Point leftBottom, rightTop;
     private float gridWidth, gridHeight;
+
+    public DurationAnalysis(Scene scene) {
+        this.type = scene.getType();
+        this.sun = scene.getSun();
+        buildings=new Building[scene.getBuildings().size()];
+        scene.getBuildings().toArray(buildings);
+        scene.setAnalysis(this);
+
+        update();
+        scene.init();
+    }
 
     public DurationAnalysis(Sun sun, Building... buildings) {
         this(Shadow.Type.FACET, sun, buildings);
@@ -64,19 +75,18 @@ public class DurationAnalysis {
         calDuration3D(sample);
     }
 
-    public void pointAnalysis(WB_Point point, WB_Coord normal) {
-        if (null == point)
+    public void pointAnalysis(SamplingPoint sp) {
+        if (null == sp)
             return;
-        sample = new SamplingPoint(point, normal);
+        sample = sp;
         calDuration3D(sample);
     }
 
-    public void pointsAnalysis(Map<WB_Point, WB_Coord> points) {
+    public void pointsAnalysis(List<SamplingPoint> points) {
         if (null == points)
             return;
         samples = new ArrayList<>();
-        for (Map.Entry<WB_Point, WB_Coord> e : points.entrySet()) {
-            SamplingPoint sp = new SamplingPoint(e.getKey(), e.getValue());
+        for (SamplingPoint sp : points) {
             calDuration3D(sp);
             samples.add(sp);
         }
@@ -126,7 +136,7 @@ public class DurationAnalysis {
 
         int counter = 0;
         for (ArrayList<WB_Triangle> l : allDayShadowTris) {
-            if (!WB_GeometryOp.contains2D(pa.point, l))
+            if (!WB_GeometryOp.contains2D(pa.getPointAbovePlane(), l))
                 counter++;
         }
 
@@ -139,10 +149,11 @@ public class DurationAnalysis {
             return;
         WB_Point[] sunPositions = new WB_Point[sun.getPathDiv() - 2];
         int counter = sunPositions.length;
+        WB_Point samplingPoint = pa.getPointAbovePlane();
         for (int i = 0; i < sunPositions.length; i++) {
             sunPositions[i] = path.getPoint(i + 1);
             WB_Ray ray = PolyHandler.gf.createRayThroughPoints(
-                    pa.point, pa.point.add(sunPositions[i]));
+                    samplingPoint, samplingPoint.add(sunPositions[i]));
             shield:
             for (Building b : buildings) {
                 List<WB_Triangle> tris = b.getTris();
@@ -190,25 +201,25 @@ public class DurationAnalysis {
 
         for (SamplingPoint sp :
                 sps) {
-            if (sp.duration == 0)
+            if (sp.getDuration() == 0)
                 app.stroke(0xbb000000);
-            else if (sp.duration < 2)
+            else if (sp.getDuration() < 2)
                 app.stroke(0xbbff0000);
-            else if (sp.duration < 4)
+            else if (sp.getDuration() < 4)
                 app.stroke(0xbbffff00);
-            else if (sp.duration < 6)
+            else if (sp.getDuration() < 6)
                 app.stroke(0xbb00ff00);
-            else if (sp.duration < 8)
+            else if (sp.getDuration() < 8)
                 app.stroke(0xbb00ffff);
-            else if (sp.duration < 10)
+            else if (sp.getDuration() < 10)
                 app.stroke(0xbb0000ff);
-            else if (sp.duration < 12)
+            else if (sp.getDuration() < 12)
                 app.stroke(0xbbff00ff);
             else
                 app.stroke(0xbb999999);
 
             app.strokeWeight(10);
-            app.point(sp.point.xf(), sp.point.yf(), sp.point.zf());
+            app.point(sp.getPointAbovePlane().xf(), sp.getPointAbovePlane().yf(), sp.getPointAbovePlane().zf());
             displayDuration(app, sp);
         }
 
@@ -217,8 +228,8 @@ public class DurationAnalysis {
 
     private void displayDuration(PApplet app, SamplingPoint sp) {
         app.pushMatrix();
-        app.translate(sp.point.xf(), sp.point.yf(), sp.point.zf());
-        app.rotate(-sp.angle, sp.axis.xf(), sp.axis.yf(), sp.axis.zf());
+        app.translate(sp.getPointAbovePlane().xf(), sp.getPointAbovePlane().yf(), sp.getPointAbovePlane().zf());
+        app.rotate(-sp.getAngle(), sp.getAxis().xf(), sp.getAxis().yf(), sp.getAxis().zf());
         app.scale(1, -1, 1);
 
         app.pushStyle();
@@ -227,7 +238,7 @@ public class DurationAnalysis {
         app.textAlign(PConstants.CENTER, PConstants.CENTER);
         app.textSize(10);
         app.fill(0);
-        app.text(String.format("%.2f", sp.duration), 0, 0, 0);
+        app.text(String.format("%.2f", sp.getDuration()), 0, 0, 0);
 
         app.popStyle();
         app.popMatrix();
@@ -245,7 +256,7 @@ public class DurationAnalysis {
         app.noStroke();
         for (SamplingPoint[] pointAnalyses : grids) {
             for (SamplingPoint grid : pointAnalyses) {
-                double d = grid.duration;
+                double d = grid.getDuration();
                 if (d == 0)
                     app.fill(0x88000000);
                 else if (d < 2)
@@ -262,32 +273,11 @@ public class DurationAnalysis {
                     app.fill(0x88ff00ff);
                 else
                     app.noFill();
-                app.rect(grid.point.xf(), grid.point.yf(), gridWidth, gridHeight);
+                app.rect(grid.getPoint().xf(), grid.getPoint().yf(), gridWidth, gridHeight);
 
 //                displayDuration(app, samples[i][j], durations[i][j]);
             }
         }
         app.popStyle();
-    }
-
-    static class SamplingPoint {
-        private final WB_Point point;
-        private final WB_Vector axis;
-        private final float angle;
-        private double duration; // in HOURS
-
-        private SamplingPoint(WB_Point point) {
-            this(point, WB_Vector.Z());
-        }
-
-        private SamplingPoint(WB_Point point, WB_Coord normal) {
-            this.point = point;
-            axis = WB_Vector.cross(normal, WB_Vector.Z());
-            angle = (float) WB_Vector.getAngle(axis, WB_Vector.Z());
-        }
-
-        private void setDuration(double d) {
-            this.duration = d;
-        }
     }
 }

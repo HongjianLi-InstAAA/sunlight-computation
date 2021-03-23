@@ -47,6 +47,28 @@ public class Shadow {
         return unionShadow(geos);
     }
 
+    public static Geometry calCurrentShadow(Scene scene) {
+        Sun sun= scene.getSun();
+        List<Building> buildings= scene.getBuildings();
+        if (sun.getPosition().zd() <= 0)
+            return null;
+        Geometry[] geos = new Geometry[buildings.size()];
+        for (int i = 0; i < geos.length; i++) {
+            switch (scene.getType()) {
+                case VOLUME:
+                    geos[i] = calShadowByVolume(
+                            sun.getPosition(), sun.getElevation(), buildings.get(i));
+                    break;
+                case FACET:
+                    geos[i] = calShadowByFacet(sun.getPosition(), buildings.get(i));
+                    break;
+                default:
+                    break;
+            }
+        }
+        return unionShadow(geos);
+    }
+
     /**
      * shadow of the all day
      *

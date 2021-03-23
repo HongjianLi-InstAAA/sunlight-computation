@@ -1,22 +1,16 @@
 package core;
 
 import gzf.gui.CameraController;
-import gzf.gui.Vec_Guo;
-import org.locationtech.jts.geom.Geometry;
 import processing.core.PApplet;
 import utility.CtrlPanel;
 import utility.JtsRender;
 import utility.PolyHandler;
-import wblut.geom.WB_Point;
 import wblut.processing.WB_Render;
 
 import java.io.File;
-import java.io.FilenameFilter;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
- * facet shadow test
+ * duration of a space point test
  *
  * @author Wu
  * @create 2021-03-08 16:47
@@ -31,20 +25,13 @@ public class Test extends PApplet {
     WB_Render render;
     JtsRender jtsRender;
 
+    Scene scene;
+
     Sun sun;
     CtrlPanel panel;
-    int[] location, date, time;
     int pathDiv = 50;
 
-    Building[] buildings;
-
-    Shadow.Type type = Shadow.Type.FACET;
-    Geometry shadow;
-    WB_Point sample;
     DurationAnalysis analysis;
-    int gridSubdiv = 100;
-
-    boolean ifShowShadow, ifShowAllDayShadow, ifShowGrid;
     boolean alt;
 
     public void settings() {
@@ -60,9 +47,7 @@ public class Test extends PApplet {
         sun = new Sun();
         sun.setPathDiv(pathDiv);
 
-        location = sun.getLocation();
-        date = sun.getDate();
-        time = sun.getTime();
+        scene = new Scene(cam, sun, panel);
 
         String objPath;
         String curDir = System.getProperty("user.dir") + "\\";
@@ -72,22 +57,10 @@ public class Test extends PApplet {
             return file.isFile() && file.getName().endsWith(".obj");
         });
         objPath = curDir + arr[0];
+        Building building = new Building(PolyHandler.reverseObj(objPath));
+        scene.addBuilding(building);
 
-        Building building = new Building(PolyHandler.obj2tris(objPath));
-        List<Building> buildingList = new ArrayList<>();
-        buildingList.add(building);
-
-        buildings = new Building[buildingList.size()];
-        buildingList.toArray(buildings);
-
-        analysis = new DurationAnalysis(type, sun, buildings);
-        sample = PolyHandler.ORIGIN;
-        update();
-        updateGrid();
-
-        ifShowShadow = false;
-        ifShowAllDayShadow = false;
-        ifShowGrid = true;
+        analysis = new DurationAnalysis(scene);
         alt = false;
     }
 
@@ -95,49 +68,11 @@ public class Test extends PApplet {
         background(255);
         cam.drawSystem(Sun.groundRadius);
 
-        sun.displayPath(render);
-        sun.display(render);
+        scene.refresh();
 
-        CtrlPanel.updateState state = panel.updateInput(sun, location, date, time);
-        if (CtrlPanel.updateState.NONE != state) {
-            update();
-            if (state == CtrlPanel.updateState.UPDATE_PATH) {
-                analysis.update();
-                if (ifShowGrid)
-                    updateGrid();
-            }
-        }
-
-        // draw buildings
-        for (Building building : buildings)
-            building.display(sun, render);
-
-        // draw shadows
-        if (ifShowShadow)
-            Shadow.displayShadow(shadow, jtsRender);
-        // draw all day shadow
-        if (ifShowAllDayShadow)
-            analysis.displayAllDayShadow(jtsRender);
-
-        // draw samples
-        analysis.displaySample(this);
-        // draw grid
-        if (ifShowGrid)
-            analysis.displayGrid(this);
-    }
-
-    private void update() {
-        shadow = Shadow.calCurrentShadow(type, sun, buildings);
-        analysis.pointAnalysis(sample);
-
-    }
-
-    private void updateGrid() {
-        analysis.gridAnalysis(
-                new WB_Point(-Sun.groundRadius, -Sun.groundRadius),
-                new WB_Point(Sun.groundRadius, Sun.groundRadius),
-                gridSubdiv, gridSubdiv
-        );
+        scene.displaySun(render);
+        scene.displayBuildings(render);
+        scene.displayAnalysis(jtsRender, this);
     }
 
     public void keyPressed() {
@@ -152,11 +87,11 @@ public class Test extends PApplet {
             alt = true;
 
         if (key == 's' || key == 'S')
-            ifShowShadow = !ifShowShadow;
+            scene.reverseShowShadow();
         if (key == 'a' || key == 'A')
-            ifShowAllDayShadow = !ifShowAllDayShadow;
+            scene.reverseShowAllDayShadow();
         if (key == 'g' || key == 'G')
-            ifShowGrid = !ifShowGrid;
+            scene.reverseShowGrid();
     }
 
     public void keyReleased() {
@@ -165,11 +100,8 @@ public class Test extends PApplet {
     }
 
     public void mouseReleased() {
-        if (mouseButton == LEFT && alt) {
-            Vec_Guo pick = cam.pick3dXYPlane(mouseX, mouseY);
-            sample.set(pick.x, pick.y);
-            analysis.pointAnalysis(sample);
-        }
+        if (mouseButton == LEFT && alt)
+            scene.capture3d(this);
     }
 
 }

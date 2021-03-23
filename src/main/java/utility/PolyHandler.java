@@ -1,6 +1,7 @@
 package utility;
 
 import Jama.Matrix;
+import gzf.gui.Vec_Guo;
 import org.locationtech.jts.geom.*;
 import wblut.geom.*;
 import wblut.hemesh.HET_Import;
@@ -31,6 +32,9 @@ public class PolyHandler {
         return new Coordinate(v.xd(), v.yf(), v.zf());
     }
 
+    public static WB_Coord vec2coord(Vec_Guo v) {
+        return new WB_Point(v.x(), v.y(), v.z());
+    }
     /**
      * @param coords JTS coordinates
      * @return Coordinate[]
@@ -253,7 +257,7 @@ public class PolyHandler {
         return tris;
     }
 
-    public static List<WB_Triangle> obj2tris(String path) {
+    public static HE_Mesh reverseObj(String path) {
         HE_Mesh mesh = HET_Import.readFromObjFile(path);
         WB_CoordCollection coords = mesh.getPoints();
         int[][] faces = mesh.getFacesAsInt();
@@ -264,7 +268,7 @@ public class PolyHandler {
             pts.add(pt);
         }
 
-        return mesh2tris(new HE_Mesh(gf.createMesh(pts, faces)));
+        return new HE_Mesh(gf.createMesh(pts, faces));
     }
 
     public static List<WB_Triangle> mesh2tris(HE_Mesh mesh) {
@@ -303,18 +307,32 @@ public class PolyHandler {
     /**
      * ray-plane intersection point
      *
-     * @param ray  ray
+     * @param ray   ray
      * @param plane WB_Triangle
      * @return WB_Point intersection point
      */
     public static WB_Point rayPlaneIntersection(WB_Ray ray, WB_Triangle plane) {
-        WB_Point la = ray.getPoint(0);
-        WB_Point lb = ray.getPoint(1);
-
         Matrix m = rayIntersectPlane(ray, plane);
         if (null == m)
             return null;
         double t = m.get(0, 0);
+        return pointInRay(ray, t);
+    }
+
+    public static double rayTriIntersectionT(WB_Ray ray, WB_Triangle plane) {
+        Matrix m = rayIntersectPlane(ray, plane);
+        if (null == m)
+            return Double.MAX_VALUE;
+        double u = m.get(1, 0);
+        double v = m.get(2, 0);
+        if (u + v <= 1 && u >= 0 && u <= 1 && v >= 0 && v <= 1)
+            return m.get(0, 0);
+        return Double.MAX_VALUE;
+    }
+
+    public static WB_Point pointInRay(WB_Ray ray, double t) {
+        WB_Point la = ray.getPoint(0);
+        WB_Point lb = ray.getPoint(1);
         return la.add(lb.sub(la).mul(t));
     }
 
@@ -329,19 +347,15 @@ public class PolyHandler {
         Matrix m = rayIntersectPlane(ray, tri);
         if (null == m)
             return false;
-
-        double t = m.get(0, 0);
         double u = m.get(1, 0);
         double v = m.get(2, 0);
-        if (t >= 0 && u + v <= 1)
-            return u >= 0 && u <= 1 && v >= 0 && v <= 1;
-        return false;
+        return u + v <= 1 && u >= 0 && u <= 1 && v >= 0 && v <= 1;
     }
 
     /**
      * ray-plane intersection matrix
      *
-     * @param ray  ray
+     * @param ray   ray
      * @param plane WB_Triangle
      * @return Matrix [{t}, {u}, {v}]
      */
@@ -367,7 +381,10 @@ public class PolyHandler {
                 {la.zd() - p0.zd()}
         });
 
-        return m.times(n);
+        Matrix intersection = m.times(n);
+        if (null != intersection && intersection.get(0, 0) >= 0)
+            return intersection;
+        return null;
     }
 
     /**

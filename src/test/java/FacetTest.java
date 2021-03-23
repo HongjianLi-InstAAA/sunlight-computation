@@ -10,6 +10,7 @@ import utility.CtrlPanel;
 import utility.JtsRender;
 import utility.PolyHandler;
 import wblut.geom.WB_Point;
+import wblut.hemesh.HET_Import;
 import wblut.processing.WB_Render;
 
 import java.util.ArrayList;
@@ -65,7 +66,7 @@ public class FacetTest extends PApplet {
         time = sun.getTime();
 
         String objPath = "src\\test\\resources\\buildings.obj";
-        Building building = new Building(PolyHandler.obj2tris(objPath));
+        Building building = new Building(PolyHandler.reverseObj(objPath));
         List<Building> buildingList = new ArrayList<>();
         buildingList.add(building);
 
