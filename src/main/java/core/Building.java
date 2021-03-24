@@ -25,7 +25,7 @@ public class Building {
     private final WB_Polygon base;
     private final double height;
 
-    private List<PolyWithNormal> pns;
+    private final List<PolyWithNormal> pns;
     private List<WB_Triangle> tris;
     private WB_AABB aabb;
 
@@ -80,12 +80,10 @@ public class Building {
         if (null == tris)
             return null;
         Map<WB_Point, WB_Coord> facetCenters = new HashMap<>();
-        for (WB_Triangle tri :
-                tris) {
+        for (WB_Triangle tri : tris) {
             WB_Plane p = tri.getPlane();
-            if (null != p) {
+            if (null != p)
                 facetCenters.put(tri.getCenter(), p.getNormal());
-            }
         }
         return facetCenters;
     }
@@ -105,8 +103,7 @@ public class Building {
         app.strokeWeight(1);
         for (PolyWithNormal p : pns)
             p.draw(render);
-//        for (WB_Triangle t : tris)
-//            render.drawTriangle(t);
+
         app.popStyle();
     }
 }

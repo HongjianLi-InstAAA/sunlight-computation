@@ -10,7 +10,6 @@ import utility.CtrlPanel;
 import utility.JtsRender;
 import utility.PolyHandler;
 import wblut.geom.WB_Point;
-import wblut.hemesh.HET_Import;
 import wblut.processing.WB_Render;
 
 import java.util.ArrayList;
@@ -57,8 +56,8 @@ public class FacetTest extends PApplet {
         render = new WB_Render(this);
         jtsRender = new JtsRender(this);
 
-        panel = new CtrlPanel();
         sun = new Sun();
+        panel = new CtrlPanel(sun);
         sun.setPathDiv(pathDiv);
 
         location = sun.getLocation();
@@ -91,11 +90,11 @@ public class FacetTest extends PApplet {
         sun.displayPath(render);
         sun.display(render);
 
-        CtrlPanel.updateState state = panel.updateInput(sun, location, date, time);
+        CtrlPanel.updateState state = panel.updateInput(location, date, time);
         if (CtrlPanel.updateState.NONE != state) {
             update();
             if (state == CtrlPanel.updateState.UPDATE_PATH) {
-                analysis.update();
+                analysis.updateAllDayShadow();
                 if (ifShowGrid)
                     updateGrid();
             }

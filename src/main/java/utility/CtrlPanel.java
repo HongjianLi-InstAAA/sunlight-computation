@@ -35,15 +35,24 @@ public class CtrlPanel extends PApplet {
     }
 
     private ControlP5 cp5;
+    private Sun sun;
 
-    public CtrlPanel() {
-        this(INIT_POSITION);
+    public CtrlPanel(Sun sun) {
+        this(INIT_POSITION, sun);
     }
 
-    public CtrlPanel(WB_Point loc) {
+//    public CtrlPanel(WB_Point loc) {
+//        super();
+//        PApplet.runSketch(new String[]{"Panel"}, this);
+//        surface.setLocation(Math.round(loc.xf()), Math.round(loc.yf()));
+//    }
+
+    public CtrlPanel(WB_Point loc, Sun sun) {
         super();
         PApplet.runSketch(new String[]{"Panel"}, this);
         surface.setLocation(Math.round(loc.xf()), Math.round(loc.yf()));
+        this.sun=sun;
+        System.out.println(sun);
     }
 
     public void settings() {
@@ -183,7 +192,7 @@ public class CtrlPanel extends PApplet {
         UPDATE_PATH, UPDATE_TIME, NONE
     }
 
-    public updateState updateInput(Sun sun, int[] location, int[] date, int[] time) {
+    public updateState updateInput(int[] location, int[] date, int[] time) {
         updateState state = updateState.NONE;
         boolean isUpdate = false;
 
@@ -217,7 +226,7 @@ public class CtrlPanel extends PApplet {
         }
 
         if (isUpdate) {
-            sun.printInfo();
+            System.out.println(sun);
 //            System.out.println(state);
         }
         return state;

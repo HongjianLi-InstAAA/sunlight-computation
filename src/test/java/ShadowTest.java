@@ -45,8 +45,8 @@ public class ShadowTest extends PApplet {
         render = new WB_Render(this);
         jtsRender = new JtsRender(this);
 
-        panel = new CtrlPanel();
         sun = new Sun();
+        panel = new CtrlPanel(sun);
 
         location = sun.getLocation();
         date = sun.getDate();
@@ -77,7 +77,7 @@ public class ShadowTest extends PApplet {
         sun.displayPath(render);
         sun.display(render);
 
-        if (CtrlPanel.updateState.NONE != panel.updateInput(sun, location, date, time))
+        if (CtrlPanel.updateState.NONE != panel.updateInput(location, date, time))
             shadow = Shadow.calCurrentShadow(Shadow.Type.VOLUME, sun, building);
 
         pushStyle();

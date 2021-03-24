@@ -56,8 +56,8 @@ public class PointAnalysisTest extends PApplet {
         render = new WB_Render(this);
         jtsRender = new JtsRender(this);
 
-        panel = new CtrlPanel();
         sun = new Sun();
+        panel = new CtrlPanel(sun);
         sun.setPathDiv(pathDiv);
 
         location = sun.getLocation();
@@ -119,11 +119,11 @@ public class PointAnalysisTest extends PApplet {
         sun.displayPath(render);
         sun.display(render);
 
-        CtrlPanel.updateState state = panel.updateInput(sun, location, date, time);
+        CtrlPanel.updateState state = panel.updateInput(location, date, time);
         if (CtrlPanel.updateState.NONE != state) {
             update();
             if (CtrlPanel.updateState.UPDATE_PATH == state)
-                analysis.update();
+                analysis.updateAllDayShadow();
         }
 
         // draw buildings

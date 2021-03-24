@@ -9,7 +9,6 @@ import wblut.geom.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -24,9 +23,9 @@ import java.util.concurrent.TimeUnit;
 public class DurationAnalysis {
     private static final int THREAD_COUNT = 25;
 
-    private Shadow.Type type;
-    private Sun sun;
-    private Building[] buildings;
+    private final Shadow.Type type;
+    private final Sun sun;
+    private final Building[] buildings;
     private Geometry[] allDayShadow;
     private List<ArrayList<WB_Triangle>> allDayShadowTris;
 
@@ -39,11 +38,10 @@ public class DurationAnalysis {
     public DurationAnalysis(Scene scene) {
         this.type = scene.getType();
         this.sun = scene.getSun();
-        buildings = new Building[scene.getBuildings().size()];
-        scene.getBuildings().toArray(buildings);
+        buildings = scene.getBuildings().toArray(new Building[0]);
         scene.setAnalysis(this);
 
-        update();
+        updateAllDayShadow();
         scene.init();
     }
 
@@ -55,10 +53,10 @@ public class DurationAnalysis {
         this.type = type;
         this.sun = sun;
         this.buildings = buildings;
-        update();
+        updateAllDayShadow();
     }
 
-    public void update() {
+    public void updateAllDayShadow() {
         allDayShadow = Shadow.calAllDayShadow(type, sun, buildings);
         if (null == allDayShadow)
             return;
@@ -68,28 +66,31 @@ public class DurationAnalysis {
                 allDayShadowTris.add(PolyHandler.toWB_Triangles(g));
     }
 
-    public void pointAnalysis(WB_Point point) {
+    public SamplingPoint pointAnalysis(WB_Point point) {
         if (null == point)
-            return;
+            return null;
         sample = new SamplingPoint(point);
         calDuration3D(sample);
+        System.out.printf("sample point duration = %.2f hours\n",
+                sample.getDuration());
+        return sample;
     }
 
     public void pointAnalysis(SamplingPoint sp) {
+        sample = sp;
         if (null == sp)
             return;
-        sample = sp;
         calDuration3D(sample);
+        System.out.printf("sample point duration = %.2f hours\n",
+                sample.getDuration());
     }
 
-    public void pointsAnalysis(List<SamplingPoint> points) {
-        if (null == points)
+    public void pointsAnalysis(List<SamplingPoint> sps) {
+        samples = sps;
+        if (null == sps)
             return;
-        samples = new ArrayList<>();
-        for (SamplingPoint sp : points) {
+        for (SamplingPoint sp : sps)
             calDuration3D(sp);
-            samples.add(sp);
-        }
     }
 
     public void gridAnalysis(WB_Point leftBottom, WB_Point rightTop,
@@ -130,26 +131,26 @@ public class DurationAnalysis {
         System.out.printf("TOTAL TIME: %.2fs%n", (endTime - startTime) / 1e3);
     }
 
-    private void calDuration(SamplingPoint pa) {
+    private void calDuration(SamplingPoint sp) {
         if (null == allDayShadow)
             return;
 
         int counter = 0;
         for (ArrayList<WB_Triangle> l : allDayShadowTris) {
-            if (!WB_GeometryOp.contains2D(pa.getPointAbovePlane(), l))
+            if (!WB_GeometryOp.contains2D(sp.getPointAbovePlane(), l))
                 counter++;
         }
 
-        pa.setDuration(sun.getSunlightDuration() * counter / allDayShadow.length);
+        sp.setDuration(sun.getSunlightDuration() * counter / allDayShadow.length);
     }
 
-    private void calDuration3D(SamplingPoint pa) {
+    private void calDuration3D(SamplingPoint sp) {
         WB_PolyLine path = sun.getPath();
         if (null == path)
             return;
         WB_Point[] sunPositions = new WB_Point[sun.getPathDiv() - 2];
         int counter = sunPositions.length;
-        WB_Point samplingPoint = pa.getPointAbovePlane();
+        WB_Point samplingPoint = sp.getPointAbovePlane();
         for (int i = 0; i < sunPositions.length; i++) {
             sunPositions[i] = path.getPoint(i + 1);
             WB_Ray ray = PolyHandler.gf.createRayThroughPoints(
@@ -165,7 +166,7 @@ public class DurationAnalysis {
                 }
             }
         }
-        pa.setDuration(sun.getSunlightDuration() * counter / sunPositions.length);
+        sp.setDuration(sun.getSunlightDuration() * counter / sunPositions.length);
     }
 
     public void displayAllDayShadow(JtsRender jtsRender) {
@@ -187,11 +188,7 @@ public class DurationAnalysis {
 
         if (null == samples)
             return;
-        SamplingPoint[] sps = new SamplingPoint[samples.size()];
-        for (int i = 0; i < sps.length; i++) {
-            sps[i] = samples.get(i);
-        }
-        displaySamplingPoint(app, sps);
+        displaySamplingPoint(app, samples.toArray(new SamplingPoint[0]));
     }
 
     private void displaySamplingPoint(PApplet app, SamplingPoint... sps) {

@@ -41,13 +41,13 @@ public class PolyWithNormal {
         app.noStroke();
         render.drawPolygon(poly);
 
-        app.stroke(0x33000000);
+        app.stroke(0x22000000);
         app.noFill();
         render.drawPolygonEdges(poly);
 
-        render.drawSegment(seg);
-        app.fill(255);
-        render.drawPoint(pt, 1);
+//        render.drawSegment(seg);
+//        app.fill(255);
+//        render.drawPoint(pt, 1);
         app.popStyle();
     }
 }

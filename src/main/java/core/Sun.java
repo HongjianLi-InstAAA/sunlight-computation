@@ -12,7 +12,7 @@ import java.util.List;
 
 /**
  * sun calculator for any location, date or time
- * Algorithm accuracy < 1°
+ * algorithm accuracy < 1°
  *
  * @author Wu
  * @ref https://www.pveducation.org/pvcdrom/properties-of-sunlight/solar-time
@@ -312,23 +312,34 @@ public class Sun {
     @Override
     public String toString() {
         String[] curTime = hours2hhmmStr(localTime);
-        return "Sun{ " + location[0] + "°" + location[1] + "° "
-                + date[0] + "-" + date[1] + " "
-                + curTime[0] + ":" + curTime[1] +
-                " }";
+        assert curTime != null : "current time is NULL";
+        String info = String.format("Sun {%d°%d° %d-%d %s:%s Sunrise ",
+                location[0], location[1], date[0], date[1], curTime[0], curTime[1]);
+
+        double[] sunriseSunset = calSunriseSunset();
+        String[] sunrise = hours2hhmmStr(sunriseSunset[0]);
+        String[] sunset = hours2hhmmStr(sunriseSunset[1]);
+        if (null != sunrise && null != sunset)
+            info += String.format("%s:%s Sunset %s:%s",
+                    sunrise[0], sunrise[1], sunset[0], sunset[1]);
+        else
+            info += " Sunrise Sunset NaN";
+        info += "}";
+        return info;
     }
 
     public void printInfo() {
         System.out.println(toString());
-//        System.out.printf("Local Solar Time Meridian\t%.2f°\n", calLSTM());
-//        System.out.printf("Equation of Time\t%.2f minutes\n", calEoT());
-//        System.out.printf("Time Correction\t%.2f minutes\n", TC);
+        System.out.printf("Local Solar Time Meridian\t%.2f°\n", calLSTM());
+        System.out.printf("Equation of Time\t%.2f minutes\n", calEoT());
+        System.out.printf("Time Correction\t%.2f minutes\n", TC);
 
         String[] LST = hours2hhmmStr(calLST());
+        assert LST != null : "LST is NULL";
         System.out.printf("Local Solar Time\t%s:%s\n", LST[0], LST[1]);
         System.out.printf("Declination\t%.2f°\n", delta);
 
-//        System.out.printf("Hour Angle\t%.2f°\n", calHRA());
+        System.out.printf("Hour Angle\t%.2f°\n", calHRA());
         System.out.printf("Elevation\t%.2f°\tAzimuth\t%.2f°\n",
                 Math.toDegrees(alpha), Math.toDegrees(azimuth));
 

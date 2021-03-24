@@ -32,7 +32,7 @@ public class SunTest extends PApplet {
         sun.setDate(12, 22);
         sun.setTime(12, 20);
 
-        sun.printInfo();
+        System.out.println(sun);
     }
 
     public void draw() {

@@ -26,7 +26,6 @@ public class Test extends PApplet {
     JtsRender jtsRender;
 
     Scene scene;
-
     Sun sun;
     CtrlPanel panel;
     int pathDiv = 50;
@@ -43,20 +42,20 @@ public class Test extends PApplet {
         render = new WB_Render(this);
         jtsRender = new JtsRender(this);
 
-        panel = new CtrlPanel();
         sun = new Sun();
+        panel = new CtrlPanel(sun);
         sun.setPathDiv(pathDiv);
 
         scene = new Scene(cam, sun, panel);
 
-        String objPath;
-        String curDir = System.getProperty("user.dir") + "\\";
-        File directory = new File(curDir);
+        String objPath = System.getProperty("user.dir") + "\\";
+        File directory = new File(objPath);
         String[] arr = directory.list((dir, name) -> {
             File file = new File(dir, name);
             return file.isFile() && file.getName().endsWith(".obj");
         });
-        objPath = curDir + arr[0];
+        objPath += arr[0];
+
         Building building = new Building(PolyHandler.reverseObj(objPath));
         scene.addBuilding(building);
 
@@ -67,6 +66,12 @@ public class Test extends PApplet {
     public void draw() {
         background(255);
         cam.drawSystem(Sun.groundRadius);
+        if (sun.getPosition().zd() > 0) {
+            directionalLight(240, 240, 240,
+                    sun.getPosition().xf(), sun.getPosition().yf(), sun.getPosition().zf());
+            lightFalloff(1, 0.0001f, 0);
+            ambientLight(200, 200, 200);
+        }
 
         scene.refresh();
 

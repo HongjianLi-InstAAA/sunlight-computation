@@ -33,8 +33,8 @@ public class InteractiveSunTest extends PApplet {
         cam = new CameraController(this, Sun.groundRadius * 2);
         render = new WB_Render(this);
 
-        panel = new CtrlPanel();
         sun = new Sun();
+        panel = new CtrlPanel(sun);
         sun.setPathDiv(50);
 
         location = sun.getLocation();
@@ -49,7 +49,7 @@ public class InteractiveSunTest extends PApplet {
 
         sun.displayPath(render);
         sun.display(render);
-        panel.updateInput(sun, location, date, time);
+        panel.updateInput(location, date, time);
     }
 
 }

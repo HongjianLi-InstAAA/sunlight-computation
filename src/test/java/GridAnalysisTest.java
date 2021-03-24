@@ -57,8 +57,8 @@ public class GridAnalysisTest extends PApplet {
         render = new WB_Render(this);
         jtsRender = new JtsRender(this);
 
-        panel = new CtrlPanel();
         sun = new Sun();
+        panel = new CtrlPanel(sun);
         sun.setPathDiv(pathDiv);
 
         location = sun.getLocation();
@@ -102,7 +102,7 @@ public class GridAnalysisTest extends PApplet {
         buildingList.add(building0);
         buildingList.add(building1);
 
-        buildings = new Building[buildingList.size()];
+        buildings = new Building[0];
         buildingList.toArray(buildings);
 
         analysis = new DurationAnalysis(type, sun, buildings);
@@ -123,11 +123,11 @@ public class GridAnalysisTest extends PApplet {
         sun.displayPath(render);
         sun.display(render);
 
-        CtrlPanel.updateState state = panel.updateInput(sun, location, date, time);
+        CtrlPanel.updateState state = panel.updateInput(location, date, time);
         if (CtrlPanel.updateState.NONE != state) {
             update();
             if (state == CtrlPanel.updateState.UPDATE_PATH) {
-                analysis.update();
+                analysis.updateAllDayShadow();
                 if (ifShowGrid)
                     updateGrid();
             }

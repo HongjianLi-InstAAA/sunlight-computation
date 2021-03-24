@@ -23,7 +23,6 @@ public class SpacePointTest extends PApplet {
     JtsRender jtsRender;
 
     Scene scene;
-
     Sun sun;
     CtrlPanel panel;
     int pathDiv = 50;
@@ -40,8 +39,8 @@ public class SpacePointTest extends PApplet {
         render = new WB_Render(this);
         jtsRender = new JtsRender(this);
 
-        panel = new CtrlPanel();
         sun = new Sun();
+        panel = new CtrlPanel(sun);
         sun.setPathDiv(pathDiv);
 
 //        String objPath;
@@ -66,6 +65,12 @@ public class SpacePointTest extends PApplet {
     public void draw() {
         background(255);
         cam.drawSystem(Sun.groundRadius);
+        if (sun.getPosition().zd() > 0) {
+            directionalLight(240, 240, 240,
+                    sun.getPosition().xf(), sun.getPosition().yf(), sun.getPosition().zf());
+            lightFalloff(1, 0.0001f, 0);
+            ambientLight(200, 200, 200);
+        }
 
         scene.refresh();
 

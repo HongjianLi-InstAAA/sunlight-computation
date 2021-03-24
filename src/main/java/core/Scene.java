@@ -109,21 +109,29 @@ public class Scene {
         return buildings;
     }
 
-    public void refresh() {
-        CtrlPanel.updateState state = panel.updateInput(sun, location, date, time);
+    public SamplingPoint getSample() {
+        return sample;
+    }
+
+    public List<SamplingPoint> getSamples() {
+        return samples;
+    }
+
+    public boolean refresh() {
+        CtrlPanel.updateState state = panel.updateInput(location, date, time);
         if (CtrlPanel.updateState.NONE != state) {
-            update();
+            updateCurrentShadow();
             if (state == CtrlPanel.updateState.UPDATE_PATH) {
-                analysis.update();
-                if (ifShowGrid)
-                    updateGrid();
+                updatePath();
+                return true;
             }
         }
+        return false;
     }
 
     public void init() {
-        update();
-        updateGrid();
+        updateCurrentShadow();
+        updatePath();
     }
 
     public void displaySun(WB_Render render) {
@@ -147,19 +155,21 @@ public class Scene {
             analysis.displayGrid(app);
     }
 
-    private void update() {
+    private void updateCurrentShadow() {
         shadow = Shadow.calCurrentShadow(this);
+    }
+
+    private void updatePath() {
+        analysis.updateAllDayShadow();
         analysis.pointAnalysis(sample);
         if (null != samples)
             analysis.pointsAnalysis(samples);
-    }
-
-    private void updateGrid() {
-        analysis.gridAnalysis(
-                new WB_Point(-Sun.groundRadius, -Sun.groundRadius),
-                new WB_Point(Sun.groundRadius, Sun.groundRadius),
-                gridSubdiv, gridSubdiv
-        );
+        if (ifShowGrid)
+            analysis.gridAnalysis(
+                    new WB_Point(-Sun.groundRadius, -Sun.groundRadius),
+                    new WB_Point(Sun.groundRadius, Sun.groundRadius),
+                    gridSubdiv, gridSubdiv
+            );
     }
 
     public void capture3d(PApplet app) {
