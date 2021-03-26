@@ -1,0 +1,21 @@
+Manifest-Version: 1.0
+Main-Class: example.Test
+Class-Path: eclipse-collections-9.0.0.jar eclipse-collections-api-9.0.0.
+ jar hemesh-data-3_0_0.jar hemesh-external-6_0_0.jar hemesh-lab.jar heme
+ sh.jar javaluator-3.0.2.jar jogl-all-2.3.2-natives-android-aarch64.jar 
+ jogl-all-main-2.3.2.jar jogl-all-2.3.2-natives-windows-amd64.jar gluege
+ n-rt-2.3.2-natives-linux-armv6hf.jar controlP5.jar jogl-all-2.3.2-nativ
+ es-linux-amd64.jar jogl-all-2.3.2-natives-linux-i586.jar jogl-all-2.3.2
+ -natives-solaris-amd64.jar gluegen-rt-2.3.2-natives-linux-i586.jar glue
+ gen-rt-2.3.2-natives-linux-armv6.jar gluegen-rt-2.3.2-natives-solaris-a
+ md64.jar gluegen-rt-2.3.2-natives-solaris-i586.jar gluegen-rt-2.3.2-nat
+ ives-macosx-universal.jar jogl-all-2.3.2-natives-macosx-universal.jar j
+ ama-1.0.3.jar jogl-all-2.3.2-natives-android-armv6.jar gluegen-rt-2.3.2
+ -natives-windows-amd64.jar guo_Cam.jar gluegen-rt-2.3.2-natives-android
+ -armv6.jar gluegen-rt-2.3.2.jar jogl-all-2.3.2.jar jogl-all-2.3.2-nativ
+ es-linux-armv6hf.jar gluegen-rt-2.3.2-natives-windows-i586.jar jogl-all
+ -2.3.2-natives-linux-armv6.jar gluegen-rt-main-2.3.2.jar gluegen-rt-2.3
+ .2-natives-android-aarch64.jar core-3.3.7.jar gluegen-rt-2.3.2-natives-
+ linux-amd64.jar jogl-all-2.3.2-natives-windows-i586.jar jogl-all-2.3.2-
+ natives-solaris-i586.jar
+

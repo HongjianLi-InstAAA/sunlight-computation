@@ -51,14 +51,7 @@ public class Building {
 
     private void init(HE_Mesh mesh) {
         this.tris = PolyHandler.mesh2tris(mesh);
-        List<WB_Coord> pts = new ArrayList<>();
-        for (WB_Triangle tri : tris) {
-            pts.add(tri.getPoint(0));
-            pts.add(tri.getPoint(1));
-            pts.add(tri.getPoint(2));
-        }
-
-        aabb = new WB_AABB(pts);
+        aabb = new WB_AABB(mesh.getPoints().toList());
     }
 
 
