@@ -10,9 +10,6 @@ import wblut.geom.WB_Point;
 import wblut.geom.WB_Vector;
 import wblut.processing.WB_Render;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * point analysis of sunlight hours test
  *
@@ -29,13 +26,13 @@ public class PointAnalysisTest extends PApplet {
     WB_Render render;
     JtsRender jtsRender;
 
+    Scene scene;
     Sun sun;
     CtrlPanel panel;
     int pathDiv = 50;
 
     int[] location, date, time;
 
-    Building[] buildings;
     int buildingHeight = 30;
 
     Geometry shadow;
@@ -56,8 +53,10 @@ public class PointAnalysisTest extends PApplet {
         jtsRender = new JtsRender(this);
 
         sun = new Sun();
-        panel = new CtrlPanel(sun);
         sun.setPathDiv(pathDiv);
+        panel = new CtrlPanel(sun);
+        scene = new Scene(cam, sun, panel);
+        scene.setShadowType(Shadow.Type.VOLUME);
 
         location = sun.getLocation();
         date = sun.getDate();
@@ -96,14 +95,10 @@ public class PointAnalysisTest extends PApplet {
                 PolyHandler.gf.createSimplePolygon(
                         PolyHandler.reversePts(poly2)),
                 buildingHeight * 2);
-        List<Building> buildingList = new ArrayList<>();
-        buildingList.add(building0);
-        buildingList.add(building1);
+        scene.addBuilding(building0);
+        scene.addBuilding(building1);
 
-        buildings = new Building[buildingList.size()];
-        buildingList.toArray(buildings);
-
-        analysis = new DurationAnalysis(sun, buildings);
+        analysis = new DurationAnalysis(scene);
         update();
         sample = new SamplingPoint(PolyHandler.ORIGIN, WB_Vector.Z());
     }
@@ -123,7 +118,7 @@ public class PointAnalysisTest extends PApplet {
         }
 
         // draw buildings
-        for (Building building : buildings)
+        for (Building building : scene.getBuildings())
             building.display(sun, render);
 
         // draw shadows
@@ -138,7 +133,7 @@ public class PointAnalysisTest extends PApplet {
     }
 
     private void update() {
-        shadow = Shadow.calCurrentShadow(Shadow.Type.VOLUME, sun, buildings);
+        shadow = Shadow.calCurrentShadow(scene);
         analysis.pointAnalysis(sample);
     }
 
@@ -159,9 +154,7 @@ public class PointAnalysisTest extends PApplet {
 
     public void mouseReleased() {
         if (mouseButton == LEFT && alt) {
-            Vec_Guo pick = cam.pick3dXYPlane(mouseX, mouseY);
-            sample.getPoint().set(pick.x, pick.y);
-            analysis.pointAnalysis(sample);
+            scene.capture2d(this);
         }
     }
 

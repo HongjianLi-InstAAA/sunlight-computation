@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * scene with a camera, sun, control panel and buildings
+ *
  * @author Wu
  * @create 2021-03-23 16:48
  */
@@ -57,9 +59,12 @@ public class Scene {
         this.analysis = analysis;
     }
 
+    public void setSample(SamplingPoint sample) {
+        this.sample = sample;
+    }
+
     public void setSamples(List<SamplingPoint> samples) {
         this.samples = samples;
-        analysis.pointsAnalysis(samples);
     }
 
     public void setShadowType(Shadow.Type t) {
@@ -171,6 +176,12 @@ public class Scene {
                     new WB_Point(Sun.groundRadius, Sun.groundRadius),
                     gridSubdiv, gridSubdiv
             );
+    }
+
+    public void capture2d(PApplet app) {
+        Vec_Guo pick = cam.pick3dXYPlane(app.mouseX, app.mouseY);
+        sample.setPoint(new WB_Point(pick.x(), pick.y()));
+        analysis.pointAnalysis(sample);
     }
 
     public void capture3d(PApplet app) {

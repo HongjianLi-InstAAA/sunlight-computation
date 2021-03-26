@@ -10,9 +10,6 @@ import wblut.geom.WB_Point;
 import wblut.geom.WB_Vector;
 import wblut.processing.WB_Render;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * facet shadow test
  *
@@ -29,22 +26,12 @@ public class FacetTest extends PApplet {
     WB_Render render;
     JtsRender jtsRender;
 
+    Scene scene;
     Sun sun;
     CtrlPanel panel;
-    int[] location, date, time;
     int pathDiv = 50;
 
-    Building[] buildings;
-
-    Shadow.Type type = Shadow.Type.FACET;
-    Geometry shadow;
-    SamplingPoint sample;
     DurationAnalysis analysis;
-    int gridSubdiv = 100;
-
-    boolean ifShowShadow = false;
-    boolean ifShowAllDayShadow = false;
-    boolean ifShowGrid = true;
     boolean alt = false;
 
     public void settings() {
@@ -57,74 +44,26 @@ public class FacetTest extends PApplet {
         jtsRender = new JtsRender(this);
 
         sun = new Sun();
-        panel = new CtrlPanel(sun);
         sun.setPathDiv(pathDiv);
-
-        location = sun.getLocation();
-        date = sun.getDate();
-        time = sun.getTime();
+        panel = new CtrlPanel(sun);
+        scene = new Scene(cam, sun, panel);
 
         String objPath = "src\\test\\resources\\buildings.obj";
         Building building = new Building(PolyHandler.reverseObj(objPath));
-        List<Building> buildingList = new ArrayList<>();
-        buildingList.add(building);
+        scene.addBuilding(building);
 
-        buildings = new Building[buildingList.size()];
-        buildingList.toArray(buildings);
-
-        analysis = new DurationAnalysis(type, sun, buildings);
-        sample = new SamplingPoint(PolyHandler.ORIGIN, WB_Vector.Z());
-        update();
-        updateGrid();
+        analysis = new DurationAnalysis(scene);
     }
 
     public void draw() {
         background(255);
         cam.drawSystem(Sun.groundRadius);
 
-        sun.displayPath(render);
-        sun.display(render);
+        scene.refresh();
 
-        CtrlPanel.updateState state = panel.updateInput(location, date, time);
-        if (CtrlPanel.updateState.NONE != state) {
-            update();
-            if (state == CtrlPanel.updateState.UPDATE_PATH) {
-                analysis.updateAllDayShadow();
-                if (ifShowGrid)
-                    updateGrid();
-            }
-        }
-
-        // draw buildings
-        for (Building building : buildings)
-            building.display(sun, render);
-
-        // draw shadows
-        if (ifShowShadow)
-            Shadow.displayShadow(shadow, jtsRender);
-        // draw all day shadow
-        if (ifShowAllDayShadow)
-            analysis.displayAllDayShadow(jtsRender);
-
-        // draw samples
-        analysis.displaySample(this);
-        // draw grid
-        if (ifShowGrid)
-            analysis.displayGrid(this);
-    }
-
-    private void update() {
-        shadow = Shadow.calCurrentShadow(type, sun, buildings);
-        analysis.pointAnalysis(sample);
-
-    }
-
-    private void updateGrid() {
-        analysis.gridAnalysis(
-                new WB_Point(-Sun.groundRadius, -Sun.groundRadius),
-                new WB_Point(Sun.groundRadius, Sun.groundRadius),
-                gridSubdiv, gridSubdiv
-        );
+        scene.displaySun(render);
+        scene.displayBuildings(render);
+        scene.displayAnalysis(jtsRender, this);
     }
 
     public void keyPressed() {
@@ -134,9 +73,9 @@ public class FacetTest extends PApplet {
 
         if (keyCode == ALT) alt = true;
 
-        if (key == 's' || key == 'S') ifShowShadow = !ifShowShadow;
-        if (key == 'a' || key == 'A') ifShowAllDayShadow = !ifShowAllDayShadow;
-        if (key == 'g' || key == 'G') ifShowGrid = !ifShowGrid;
+        if (key == 's' || key == 'S') scene.reverseShowShadow();
+        if (key == 'a' || key == 'A') scene.reverseShowAllDayShadow();
+        if (key == 'g' || key == 'G') scene.reverseShowGrid();
     }
 
     public void keyReleased() {
@@ -144,11 +83,8 @@ public class FacetTest extends PApplet {
     }
 
     public void mouseReleased() {
-        if (mouseButton == LEFT && alt) {
-            Vec_Guo pick = cam.pick3dXYPlane(mouseX, mouseY);
-            sample.getPoint().set(pick.x, pick.y);
-            analysis.pointAnalysis(sample);
-        }
+        if (mouseButton == LEFT && alt)
+            scene.capture2d(this);
     }
 
 }

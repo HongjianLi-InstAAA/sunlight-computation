@@ -20,33 +20,39 @@ import java.util.List;
 public class Shadow {
     public enum Type {VOLUME, FACET}
 
+//    /**
+//     * shadow at the current time
+//     *
+//     * @param sun       sun
+//     * @param buildings buildings
+//     * @return Geometry
+//     */
+//    public static Geometry calCurrentShadow(Type type, Sun sun, Building... buildings) {
+//        if (sun.getPosition().zd() <= 0)
+//            return null;
+//        Geometry[] geos = new Geometry[buildings.length];
+//        for (int i = 0; i < geos.length; i++) {
+//            switch (type) {
+//                case VOLUME:
+//                    geos[i] = calShadowByVolume(
+//                            sun.getPosition(), sun.getElevation(), buildings[i]);
+//                    break;
+//                case FACET:
+//                    geos[i] = calShadowByFacet(sun.getPosition(), buildings[i]);
+//                    break;
+//                default:
+//                    break;
+//            }
+//        }
+//        return unionShadow(geos);
+//    }
+
     /**
      * shadow at the current time
      *
-     * @param sun       sun
-     * @param buildings buildings
+     * @param scene scene
      * @return Geometry
      */
-    public static Geometry calCurrentShadow(Type type, Sun sun, Building... buildings) {
-        if (sun.getPosition().zd() <= 0)
-            return null;
-        Geometry[] geos = new Geometry[buildings.length];
-        for (int i = 0; i < geos.length; i++) {
-            switch (type) {
-                case VOLUME:
-                    geos[i] = calShadowByVolume(
-                            sun.getPosition(), sun.getElevation(), buildings[i]);
-                    break;
-                case FACET:
-                    geos[i] = calShadowByFacet(sun.getPosition(), buildings[i]);
-                    break;
-                default:
-                    break;
-            }
-        }
-        return unionShadow(geos);
-    }
-
     public static Geometry calCurrentShadow(Scene scene) {
         Sun sun = scene.getSun();
         List<Building> buildings = scene.getBuildings();
@@ -69,14 +75,52 @@ public class Shadow {
         return unionShadow(geos);
     }
 
+//    /**
+//     * shadow of the all day
+//     *
+//     * @param sun       sun
+//     * @param buildings buildings
+//     * @return Geometry[]
+//     */
+//    public static Geometry[] calAllDayShadow(Type type, Sun sun, Building... buildings) {
+//        WB_PolyLine path = sun.getPath();
+//        if (null == path)
+//            return null;
+//
+//        Geometry[] allDayShadow = new Geometry[sun.getPathDiv() - 2];
+//        double[] pathElevation = sun.getPathElevation();
+//
+//        for (int i = 0; i < allDayShadow.length; i++) {
+//            Geometry[] timeShadow = new Geometry[buildings.length];
+//            for (int j = 0; j < timeShadow.length; j++) {
+//                switch (type) {
+//                    case VOLUME:
+//                        timeShadow[j] = calShadowByVolume(path.getPoint(i + 1),
+//                                pathElevation[i + 1], buildings[j]);
+//                        break;
+//                    case FACET:
+//                        timeShadow[j] = calShadowByFacet(path.getPoint(i + 1), buildings[j]);
+//                        break;
+//                    default:
+//                        break;
+//                }
+//            }
+//
+//            allDayShadow[i] = unionShadow(timeShadow);
+//        }
+//
+//        return allDayShadow;
+//    }
+
     /**
      * shadow of the all day
      *
-     * @param sun       sun
-     * @param buildings buildings
+     * @param scene scene
      * @return Geometry[]
      */
-    public static Geometry[] calAllDayShadow(Type type, Sun sun, Building... buildings) {
+    public static Geometry[] calAllDayShadow(Scene scene) {
+        Sun sun=scene.getSun();
+        List<Building> buildings= scene.getBuildings();
         WB_PolyLine path = sun.getPath();
         if (null == path)
             return null;
@@ -85,15 +129,15 @@ public class Shadow {
         double[] pathElevation = sun.getPathElevation();
 
         for (int i = 0; i < allDayShadow.length; i++) {
-            Geometry[] timeShadow = new Geometry[buildings.length];
+            Geometry[] timeShadow = new Geometry[buildings.size()];
             for (int j = 0; j < timeShadow.length; j++) {
-                switch (type) {
+                switch (scene.getType()) {
                     case VOLUME:
                         timeShadow[j] = calShadowByVolume(path.getPoint(i + 1),
-                                pathElevation[i + 1], buildings[j]);
+                                pathElevation[i + 1], buildings.get(j));
                         break;
                     case FACET:
-                        timeShadow[j] = calShadowByFacet(path.getPoint(i + 1), buildings[j]);
+                        timeShadow[j] = calShadowByFacet(path.getPoint(i + 1), buildings.get(j));
                         break;
                     default:
                         break;

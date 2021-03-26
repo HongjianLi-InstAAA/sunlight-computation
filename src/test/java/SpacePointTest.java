@@ -107,7 +107,8 @@ public class SpacePointTest extends PApplet {
     }
 
     public void mouseReleased() {
-        if (mouseButton == LEFT && alt) scene.capture3d(this);
+        if (mouseButton == LEFT && alt)
+            scene.capture3d(this);
     }
 
 }

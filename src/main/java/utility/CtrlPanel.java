@@ -53,7 +53,7 @@ public class CtrlPanel extends PApplet {
     }
 
     public void setup() {
-//            System.out.println("inner setup-----------------------------");
+//        System.out.println("inner setup-----------------------------");
         cp5 = new ControlP5(this);
 
         int topMargin = 30;
@@ -150,7 +150,7 @@ public class CtrlPanel extends PApplet {
     }
 
     public void draw() {
-//            System.out.println("inner draw-----------------------------");
+//        System.out.println("inner draw-----------------------------");
         background(BG_COLOR);
     }
 

@@ -10,9 +10,6 @@ import wblut.geom.WB_Point;
 import wblut.geom.WB_Vector;
 import wblut.processing.WB_Render;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * grid analysis of sunlight hours test
  *
@@ -29,15 +26,14 @@ public class GridAnalysisTest extends PApplet {
     WB_Render render;
     JtsRender jtsRender;
 
+    Scene scene;
     Sun sun;
     CtrlPanel panel;
     int[] location, date, time;
     int pathDiv = 50;
 
-    Building[] buildings;
     int buildingHeight = 30;
 
-    Shadow.Type type = Shadow.Type.VOLUME;
     Geometry shadow;
     SamplingPoint sample;
     DurationAnalysis analysis;
@@ -58,8 +54,10 @@ public class GridAnalysisTest extends PApplet {
         jtsRender = new JtsRender(this);
 
         sun = new Sun();
-        panel = new CtrlPanel(sun);
         sun.setPathDiv(pathDiv);
+        panel = new CtrlPanel(sun);
+        scene = new Scene(cam, sun, panel);
+        scene.setShadowType(Shadow.Type.VOLUME);
 
         location = sun.getLocation();
         date = sun.getDate();
@@ -98,14 +96,10 @@ public class GridAnalysisTest extends PApplet {
                 PolyHandler.gf.createSimplePolygon(
                         PolyHandler.reversePts(poly2)),
                 buildingHeight * 2);
-        List<Building> buildingList = new ArrayList<>();
-        buildingList.add(building0);
-        buildingList.add(building1);
+        scene.addBuilding(building0);
+        scene.addBuilding(building1);
 
-        buildings = new Building[0];
-        buildingList.toArray(buildings);
-
-        analysis = new DurationAnalysis(type, sun, buildings);
+        analysis = new DurationAnalysis(scene);
         sample = new SamplingPoint(PolyHandler.ORIGIN, WB_Vector.Z());
         update();
         updateGrid();
@@ -129,7 +123,7 @@ public class GridAnalysisTest extends PApplet {
         }
 
         // draw buildings
-        for (Building building : buildings)
+        for (Building building : scene.getBuildings())
             building.display(sun, render);
 
         // draw shadows
@@ -147,7 +141,7 @@ public class GridAnalysisTest extends PApplet {
     }
 
     private void update() {
-        shadow = Shadow.calCurrentShadow(type, sun, buildings);
+        shadow = Shadow.calCurrentShadow(scene);
         analysis.pointAnalysis(sample);
 
     }
@@ -178,9 +172,7 @@ public class GridAnalysisTest extends PApplet {
 
     public void mouseReleased() {
         if (mouseButton == LEFT && alt) {
-            Vec_Guo pick = cam.pick3dXYPlane(mouseX, mouseY);
-            sample.getPoint().set(pick.x, pick.y);
-            analysis.pointAnalysis(sample);
+            scene.capture2d(this);
         }
     }
 

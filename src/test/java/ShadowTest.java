@@ -1,4 +1,5 @@
 import core.Building;
+import core.Scene;
 import core.Shadow;
 import core.Sun;
 import gzf.gui.CameraController;
@@ -26,6 +27,7 @@ public class ShadowTest extends PApplet {
     WB_Render render;
     JtsRender jtsRender;
 
+    Scene scene;
     Sun sun;
     CtrlPanel panel;
 
@@ -47,6 +49,8 @@ public class ShadowTest extends PApplet {
 
         sun = new Sun();
         panel = new CtrlPanel(sun);
+        scene = new Scene(cam, sun, panel);
+        scene.setShadowType(Shadow.Type.VOLUME);
 
         location = sun.getLocation();
         date = sun.getDate();
@@ -67,7 +71,8 @@ public class ShadowTest extends PApplet {
         building = new Building(PolyHandler.gf.createPolygonWithHole(
                 PolyHandler.reversePts(shell), PolyHandler.reversePts(hole)),
                 buildingHeight);
-        shadow = Shadow.calCurrentShadow(Shadow.Type.VOLUME, sun, building);
+        scene.addBuilding(building);
+        shadow = Shadow.calCurrentShadow(scene);
     }
 
     public void draw() {
@@ -78,7 +83,7 @@ public class ShadowTest extends PApplet {
         sun.display(render);
 
         if (CtrlPanel.updateState.NONE != panel.updateInput(location, date, time))
-            shadow = Shadow.calCurrentShadow(Shadow.Type.VOLUME, sun, building);
+            shadow = Shadow.calCurrentShadow(scene);
 
         pushStyle();
         // draw shadows
@@ -98,12 +103,9 @@ public class ShadowTest extends PApplet {
     }
 
     public void keyPressed() {
-        if (key == 't' || key == 'T')
-            cam.top();
-        if (key == 'f' || key == 'F')
-            cam.front();
-        if (key == 'p' || key == 'P')
-            cam.perspective();
+        if (key == 't' || key == 'T') cam.top();
+        if (key == 'f' || key == 'F') cam.front();
+        if (key == 'p' || key == 'P') cam.perspective();
     }
 
 }

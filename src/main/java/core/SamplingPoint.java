@@ -13,10 +13,11 @@ import wblut.geom.WB_Vector;
 
 public class SamplingPoint {
 
-    private final WB_Point point;
-    private final WB_Point pointAbovePlane;
-    private final WB_Vector axis;
-    private final float angle;
+    private WB_Point point;
+    private WB_Coord normal;
+    private WB_Point pointAbovePlane;
+    private WB_Vector axis;
+    private float angle;
     private double duration; // in HOURS
 
     public SamplingPoint(WB_Point point) {
@@ -24,7 +25,19 @@ public class SamplingPoint {
     }
 
     public SamplingPoint(WB_Point point, WB_Coord normal) {
+        setPoint(point, normal);
+    }
+
+    public void setPoint(WB_Point point) {
+        if (null == normal)
+            setPoint(point, WB_Vector.Z());
+        else
+            setPoint(point, normal);
+    }
+
+    public void setPoint(WB_Point point, WB_Coord normal) {
         this.point = point;
+        this.normal = normal;
         axis = WB_Vector.cross(normal, WB_Vector.Z());
         angle = (float) WB_Vector.getAngle(axis, WB_Vector.Z());
         pointAbovePlane = point.add(WB_Vector.mul(normal, 1));
