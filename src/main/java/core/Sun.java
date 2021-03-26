@@ -342,15 +342,6 @@ public class Sun {
         System.out.printf("Hour Angle\t%.2f°\n", calHRA());
         System.out.printf("Elevation\t%.2f°\tAzimuth\t%.2f°\n",
                 Math.toDegrees(alpha), Math.toDegrees(azimuth));
-
-        double[] sunriseSunset = calSunriseSunset();
-        String[] sunrise = hours2hhmmStr(sunriseSunset[0]);
-        String[] sunset = hours2hhmmStr(sunriseSunset[1]);
-        if (null != sunrise && null != sunset)
-            System.out.printf("Sunrise\t%s:%s\tSunset\t%s:%s\n",
-                    sunrise[0], sunrise[1], sunset[0], sunset[1]);
-        else
-            System.out.print("Sunrise Sunset\tNaN\n");
     }
 
     /**

@@ -66,15 +66,15 @@ public class DurationAnalysis {
                 allDayShadowTris.add(PolyHandler.toWB_Triangles(g));
     }
 
-    public SamplingPoint pointAnalysis(WB_Point point) {
-        if (null == point)
-            return null;
-        sample = new SamplingPoint(point);
-        calDuration3D(sample);
-        System.out.printf("sample point duration = %.2f hours\n",
-                sample.getDuration());
-        return sample;
-    }
+//    public SamplingPoint pointAnalysis(WB_Point point) {
+//        if (null == point)
+//            return null;
+//        sample = new SamplingPoint(point);
+//        calDuration3D(sample);
+//        System.out.printf("sample point duration = %.2f hours\n",
+//                sample.getDuration());
+//        return sample;
+//    }
 
     public void pointAnalysis(SamplingPoint sp) {
         sample = sp;

@@ -10,10 +10,10 @@ import wblut.hemesh.HE_Mesh;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
- * this class is made to convert between
- * JTS Polygon and HE_Mesh WB_Polygon
+ * convert between JTS Polygon and HE_Mesh WB_Polygon
  *
  * @author FreeMan
  * @modifier Wu
@@ -203,6 +203,7 @@ public class PolyHandler {
                     coords = subLast(coords);
                     // System.out.println(coords[0]+" &&
                     // "+coords[coords.length-1]);/
+                    assert coords != null : "coords == NULL";
                     WB_Point[] pts = new WB_Point[coords.length];
                     for (int j = 0; j < coords.length; j++) {
                         pts[j] = new WB_Point(coords[j].x, coords[j].y, coords[j].z);
@@ -271,6 +272,7 @@ public class PolyHandler {
 
         return new HE_Mesh(gf.createMesh(pts, faces));
     }
+
 
     public static List<WB_Triangle> mesh2tris(HE_Mesh mesh) {
         if (null == mesh)
@@ -468,7 +470,7 @@ public class PolyHandler {
         if (poly.getNumberOfContours() == 1)
             return applyToSimple(poly, T);
         WB_Point[] out = applyToPts(getShellPts(poly), T);
-        WB_Point[][] in = applyToPts(getInnerPts(poly), T);
+        WB_Point[][] in = applyToPts(Objects.requireNonNull(getInnerPts(poly)), T);
         return new WB_Polygon(out, in);
     }
 

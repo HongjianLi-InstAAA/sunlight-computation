@@ -2,9 +2,12 @@ import core.*;
 import gzf.gui.CameraController;
 import processing.core.PApplet;
 import utility.CtrlPanel;
+import utility.IOHandler;
 import utility.JtsRender;
-import utility.PolyHandler;
+import wblut.hemesh.HE_Mesh;
 import wblut.processing.WB_Render;
+
+import java.util.List;
 
 /**
  * duration of a space point test
@@ -28,7 +31,7 @@ public class SpacePointTest extends PApplet {
     int pathDiv = 50;
 
     DurationAnalysis analysis;
-    boolean alt;
+    boolean alt = false;
 
     public void settings() {
         size(1000, 800, P3D);
@@ -39,27 +42,32 @@ public class SpacePointTest extends PApplet {
         render = new WB_Render(this);
         jtsRender = new JtsRender(this);
 
+        // initialize the sun and panel
         sun = new Sun();
-        panel = new CtrlPanel(sun);
         sun.setPathDiv(pathDiv);
+        panel = new CtrlPanel(sun);
+        // add the camera, sun and panel to the scene
+        scene = new Scene(cam, sun, panel);
 
-//        String objPath;
-//        String curDir = System.getProperty("user.dir") + "\\";
-//        File directory = new File(curDir);
+        // add the buildings to the scene
+        // get the first .obj file from the current directory
+//        String objPath = System.getProperty("user.dir") + "\\";
+//        File directory = new File(objPath);
 //        String[] arr = directory.list((dir, name) -> {
 //            File file = new File(dir, name);
 //            return file.isFile() && file.getName().endsWith(".obj");
 //        });
+//        assert arr != null : "no .obj file found";
 //        objPath = curDir + arr[0];
-
-        scene = new Scene(cam, sun, panel);
-
+        // OR
+        // specify the .obj file path
         String objPath = "src\\test\\resources\\buildings.obj";
-        Building building = new Building(PolyHandler.reverseObj(objPath));
-        scene.addBuilding(building);
+        List<HE_Mesh> meshes = IOHandler.readFromOBJFile(objPath);
+        for (HE_Mesh m : meshes)
+            scene.addBuilding(new Building(IOHandler.switchObjYZ(m)));
 
+        // initialize the analysis
         analysis = new DurationAnalysis(scene);
-        alt = false;
     }
 
     public void draw() {
@@ -77,35 +85,29 @@ public class SpacePointTest extends PApplet {
         scene.displaySun(render);
         scene.displayBuildings(render);
         scene.displayAnalysis(jtsRender, this);
+
+        for (Building b : scene.getBuildings())
+            b.displayAABB(render);
     }
 
     public void keyPressed() {
-        if (key == 't' || key == 'T')
-            cam.top();
-        if (key == 'f' || key == 'F')
-            cam.front();
-        if (key == 'p' || key == 'P')
-            cam.perspective();
+        if (key == 't' || key == 'T') cam.top();
+        if (key == 'f' || key == 'F') cam.front();
+        if (key == 'p' || key == 'P') cam.perspective();
 
-        if (keyCode == ALT)
-            alt = true;
+        if (keyCode == ALT) alt = true;
 
-        if (key == 's' || key == 'S')
-            scene.reverseShowShadow();
-        if (key == 'a' || key == 'A')
-            scene.reverseShowAllDayShadow();
-        if (key == 'g' || key == 'G')
-            scene.reverseShowGrid();
+        if (key == 's' || key == 'S') scene.reverseShowShadow();
+        if (key == 'a' || key == 'A') scene.reverseShowAllDayShadow();
+        if (key == 'g' || key == 'G') scene.reverseShowGrid();
     }
 
     public void keyReleased() {
-        if (keyCode == ALT)
-            alt = false;
+        if (keyCode == ALT) alt = false;
     }
 
     public void mouseReleased() {
-        if (mouseButton == LEFT && alt)
-            scene.capture3d(this);
+        if (mouseButton == LEFT && alt) scene.capture3d(this);
     }
 
 }

@@ -35,24 +35,17 @@ public class CtrlPanel extends PApplet {
     }
 
     private ControlP5 cp5;
-    private Sun sun;
+    private final Sun sun;
 
     public CtrlPanel(Sun sun) {
         this(INIT_POSITION, sun);
     }
 
-//    public CtrlPanel(WB_Point loc) {
-//        super();
-//        PApplet.runSketch(new String[]{"Panel"}, this);
-//        surface.setLocation(Math.round(loc.xf()), Math.round(loc.yf()));
-//    }
-
     public CtrlPanel(WB_Point loc, Sun sun) {
         super();
         PApplet.runSketch(new String[]{"Panel"}, this);
         surface.setLocation(Math.round(loc.xf()), Math.round(loc.yf()));
-        this.sun=sun;
-        System.out.println(sun);
+        this.sun = sun;
     }
 
     public void settings() {

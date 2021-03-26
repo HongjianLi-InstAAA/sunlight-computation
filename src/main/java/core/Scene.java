@@ -43,6 +43,7 @@ public class Scene {
         this.cam = cam;
         this.sun = sun;
         this.panel = panel;
+        System.out.println(sun);
 
         location = sun.getLocation();
         date = sun.getDate();

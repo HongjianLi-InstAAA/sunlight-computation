@@ -44,9 +44,7 @@ public class SunTest extends PApplet {
     }
 
     public void keyPressed() {
-        if (key == 't' || key == 'T')
-            cam.top();
-        if (key == 'p' || key == 'P')
-            cam.perspective();
+        if (key == 't' || key == 'T') cam.top();
+        if (key == 'p' || key == 'P') cam.perspective();
     }
 }

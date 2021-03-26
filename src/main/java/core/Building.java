@@ -10,12 +10,10 @@ import wblut.hemesh.HE_Mesh;
 import wblut.processing.WB_Render;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
- * simple building for sunlight computation
+ * building for sunlight computation
  *
  * @author Wu
  * @create 2021-02-27 9:52
@@ -76,18 +74,6 @@ public class Building {
         return tris;
     }
 
-    public Map<WB_Point, WB_Coord> getFacetCenters() {
-        if (null == tris)
-            return null;
-        Map<WB_Point, WB_Coord> facetCenters = new HashMap<>();
-        for (WB_Triangle tri : tris) {
-            WB_Plane p = tri.getPlane();
-            if (null != p)
-                facetCenters.put(tri.getCenter(), p.getNormal());
-        }
-        return facetCenters;
-    }
-
     public WB_AABB getAABB() {
         return aabb;
     }
@@ -104,6 +90,16 @@ public class Building {
         for (PolyWithNormal p : pns)
             p.draw(render);
 
+        app.popStyle();
+    }
+
+    public void displayAABB(WB_Render render) {
+        PGraphics app = render.getHome();
+        app.pushStyle();
+        app.strokeWeight(1);
+        app.stroke(0xff555555);
+        app.noFill();
+        render.drawAABB(aabb);
         app.popStyle();
     }
 }

@@ -1,7 +1,4 @@
-import core.Building;
-import core.DurationAnalysis;
-import core.Shadow;
-import core.Sun;
+import core.*;
 import gzf.gui.CameraController;
 import gzf.gui.Vec_Guo;
 import org.locationtech.jts.geom.Geometry;
@@ -10,6 +7,7 @@ import utility.CtrlPanel;
 import utility.JtsRender;
 import utility.PolyHandler;
 import wblut.geom.WB_Point;
+import wblut.geom.WB_Vector;
 import wblut.processing.WB_Render;
 
 import java.util.ArrayList;
@@ -41,11 +39,12 @@ public class PointAnalysisTest extends PApplet {
     int buildingHeight = 30;
 
     Geometry shadow;
-    WB_Point sample;
+    SamplingPoint sample;
     DurationAnalysis analysis;
 
-    boolean ifShowShadow, ifShowAllDayShadow;
-    boolean alt;
+    boolean ifShowShadow = true;
+    boolean ifShowAllDayShadow = false;
+    boolean alt = false;
 
     public void settings() {
         size(1000, 800, P3D);
@@ -106,10 +105,7 @@ public class PointAnalysisTest extends PApplet {
 
         analysis = new DurationAnalysis(sun, buildings);
         update();
-        sample = PolyHandler.ORIGIN;
-        ifShowShadow = true;
-        ifShowAllDayShadow = false;
-        alt = false;
+        sample = new SamplingPoint(PolyHandler.ORIGIN, WB_Vector.Z());
     }
 
     public void draw() {
@@ -147,31 +143,24 @@ public class PointAnalysisTest extends PApplet {
     }
 
     public void keyPressed() {
-        if (key == 't' || key == 'T')
-            cam.top();
-        if (key == 'f' || key == 'F')
-            cam.front();
-        if (key == 'p' || key == 'P')
-            cam.perspective();
+        if (key == 't' || key == 'T') cam.top();
+        if (key == 'f' || key == 'F') cam.front();
+        if (key == 'p' || key == 'P') cam.perspective();
 
-        if (keyCode == ALT)
-            alt = true;
+        if (keyCode == ALT) alt = true;
 
-        if (key == 's' || key == 'S')
-            ifShowShadow = !ifShowShadow;
-        if (key == 'a' || key == 'A')
-            ifShowAllDayShadow = !ifShowAllDayShadow;
+        if (key == 's' || key == 'S') ifShowShadow = !ifShowShadow;
+        if (key == 'a' || key == 'A') ifShowAllDayShadow = !ifShowAllDayShadow;
     }
 
     public void keyReleased() {
-        if (keyCode == ALT)
-            alt = false;
+        if (keyCode == ALT) alt = false;
     }
 
     public void mouseReleased() {
         if (mouseButton == LEFT && alt) {
             Vec_Guo pick = cam.pick3dXYPlane(mouseX, mouseY);
-            sample.set(pick.x, pick.y);
+            sample.getPoint().set(pick.x, pick.y);
             analysis.pointAnalysis(sample);
         }
     }
