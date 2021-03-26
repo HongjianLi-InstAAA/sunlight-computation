@@ -8,7 +8,7 @@ Sunlight-computation is a Java library for building sunlight analysis which supp
 - [ControlP5](https://github.com/sojamo/controlp5)
 - [Jama-1.0.3](https://math.nist.gov/javanumerics/jama/)
 - Guo_Cam
-## core
+## Core
 core primitive and calculator
 ### Sun
 sun calculator for any location, date or time with algorithm accuracy < 1°
@@ -23,10 +23,10 @@ building for sunlight computation
 ### Scene
 scene with a camera, sun, control panel and buildings
 ### DurationAnalysis
-analysis on sunlight duration at a given point in the scene
+analysis of sunlight duration at a given point in the scene
 - point analysis
 - grid analysis
-## utility
+## Utility
 toolkit for geometric operation and rendering
 ### CtrlPanel
 the second PApplet window for controllers
