@@ -1,6 +1,6 @@
 # sunlight computation
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
-***
+
 Sunlight-computation is a Java library for building sunlight analysis which supports external OBJ files as input. It implements real-time and all-day shadow computation and provides point analysis on sunlight duration.
 ## Dependencies
 ***
@@ -10,7 +10,6 @@ Sunlight-computation is a Java library for building sunlight analysis which supp
 - [Jama-1.0.3](https://math.nist.gov/javanumerics/jama/)
 - Guo_Cam
 ## core
-***
 core primitive and calculator
 ### Sun
 sun calculator for any location, date or time with algorithm accuracy < 1°
@@ -29,7 +28,6 @@ analysis on sunlight duration at a given point in the scene
 - point analysis
 - grid analysis
 ## utility
-***
 toolkit for geometric operation and rendering
 ### CtrlPanel
 the second PApplet window for controllers
@@ -42,7 +40,6 @@ convert between JTS Polygon and HE_Mesh WB_Polygon
 ### IOHandler
 handle input/output issues
 ## Example
-***
 ```java
 import core.Building;
 import core.DurationAnalysis;
