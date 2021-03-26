@@ -3,33 +3,33 @@ sunlight computation for simple buildings
 ### core
 core primitive and calculator
 
-####Sun
+#### Sun
 sun calculator for any location, date or time with algorithm accuracy < 1°
-####Shadow
+#### Shadow
 shadow calculator for the sun at a given position
 - calculate shadow at the current time
 - calculate all-day shadow on a given date
-####Building
+#### Building
 building for sunlight computation
 - create from a base polygon and height
 - create from a HE_Mesh
-####Scene
+#### Scene
 scene with a camera, sun, control panel and buildings
-####DurationAnalysis
+#### DurationAnalysis
 analysis on sunlight duration at a give point in the scene
 - point analysis
 - grid analysis
 ### utility
 toolkit for geometric operation and rendering
-####CtrlPanel
+#### CtrlPanel
 the second PApplet window for controllers
-####JtsRender
+#### JtsRender
 renderer for JTS primitives
-####PolyWithNormal
+#### PolyWithNormal
 polygon with normal to check if the front is outward
-####PolyHandler
+#### PolyHandler
 convert between JTS Polygon and HE_Mesh WB_Polygon
-####IOHandler
+#### IOHandler
 handle input/output issues
 ### test
 test programs
