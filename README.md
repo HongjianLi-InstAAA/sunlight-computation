@@ -1,9 +1,8 @@
 # sunlight computation
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 
-Sunlight-computation is a Java library for building sunlight analysis which supports external OBJ files as input. It implements real-time and all-day shadow computation and provides point analysis on sunlight duration.
+Sunlight-computation is a Java library for building sunlight analysis which supports external OBJ files as input. It implements real-time and all-day shadow computation, and provides point analysis of sunlight duration.
 ## Dependencies
-***
 - [Processing-3.3.7](https://github.com/processing/processing/releases/tag/processing-0264-3.3.7)
 - [HE_Mesh](https://github.com/wblut/HE_Mesh)
 - [ControlP5](https://github.com/sojamo/controlp5)
