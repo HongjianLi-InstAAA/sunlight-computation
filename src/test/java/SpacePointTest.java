@@ -63,8 +63,9 @@ public class SpacePointTest extends PApplet {
         // specify the .obj file path
         String objPath = "src\\test\\resources\\buildings.obj";
         List<HE_Mesh> meshes = IOHandler.readFromOBJFile(objPath);
-        for (HE_Mesh m : meshes)
-            scene.addBuilding(new Building(IOHandler.switchObjYZ(m)));
+//        for (HE_Mesh m : meshes)
+//            scene.addBuilding(new Building(IOHandler.switchObjYZ(m)));
+        scene.addMeshesAsBuildings(meshes, true);
 
         // initialize the analysis
         analysis = new DurationAnalysis(scene);

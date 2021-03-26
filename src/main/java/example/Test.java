@@ -16,10 +16,10 @@ import java.io.File;
 import java.util.List;
 
 /**
- * duration of a space point test
+ * example program for sunlight-computation library
  *
  * @author Wu
- * @create 2021-03-08 16:47
+ * @create 2021-03-24 16:47
  */
 
 public class Test extends PApplet {
@@ -69,8 +69,7 @@ public class Test extends PApplet {
         // specify the .obj file path
 //        String objPath = "src\\test\\resources\\buildings.obj";
         List<HE_Mesh> meshes = IOHandler.readFromOBJFile(objPath);
-        for (HE_Mesh m : meshes)
-            scene.addBuilding(new Building(IOHandler.switchObjYZ(m)));
+        scene.addMeshesAsBuildings(meshes, true);
 
         // initialize the analysis
         analysis = new DurationAnalysis(scene);
@@ -113,7 +112,8 @@ public class Test extends PApplet {
     }
 
     public void mouseReleased() {
-        if (mouseButton == LEFT && alt) scene.capture3d(this);
+        if (mouseButton == LEFT && alt)
+            scene.capture3d(this);
     }
 
 }

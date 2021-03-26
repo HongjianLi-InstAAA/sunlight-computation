@@ -97,7 +97,7 @@ public class Building {
         PGraphics app = render.getHome();
         app.pushStyle();
         app.strokeWeight(1);
-        app.stroke(0xff555555);
+        app.stroke(0xff666666);
         app.noFill();
         render.drawAABB(aabb);
         app.popStyle();

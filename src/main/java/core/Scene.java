@@ -5,9 +5,11 @@ import gzf.gui.Vec_Guo;
 import org.locationtech.jts.geom.Geometry;
 import processing.core.PApplet;
 import utility.CtrlPanel;
+import utility.IOHandler;
 import utility.JtsRender;
 import utility.PolyHandler;
 import wblut.geom.*;
+import wblut.hemesh.HE_Mesh;
 import wblut.processing.WB_Render;
 
 import java.util.ArrayList;
@@ -101,6 +103,17 @@ public class Scene {
 
     public void addBuilding(Building b) {
         buildings.add(b);
+    }
+
+    public void addMeshesAsBuildings(List<HE_Mesh> meshes, boolean switchYZ) {
+        if (null == meshes)
+            return;
+        for (HE_Mesh m : meshes) {
+            if (switchYZ)
+                buildings.add(new Building(IOHandler.switchObjYZ(m)));
+            else
+                buildings.add(new Building(m));
+        }
     }
 
     public Sun getSun() {
